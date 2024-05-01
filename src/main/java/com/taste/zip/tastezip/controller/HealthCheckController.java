@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class HealthCheckController {
 
-    @GetMapping(value = "/health", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/health")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("OK");
     }
