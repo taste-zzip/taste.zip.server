@@ -2,7 +2,8 @@ package com.taste.zip.tastezip;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration; // CI 과정에서 임시적 exclude
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration; // CI 과정에서 임시적으로 exclude
+// test
 
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 public class TasteZipApplication {
