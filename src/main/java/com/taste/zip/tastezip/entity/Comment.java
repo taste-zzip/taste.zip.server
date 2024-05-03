@@ -20,6 +20,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment {
 
+    // git webhooks test
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
