@@ -19,6 +19,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment {
+    // cicd test
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
