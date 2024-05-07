@@ -27,11 +27,24 @@ public class Cafeteria {
     private String type;
 
     @Column
-    private String address;
+    private String streetAddress;
+
+    @Column
+    private String landAddress;
+
+    @Column
+    private String city;
+
+    @Column
+    private String district;
+
+    @Column
+    private String neighborhood;
 
     @Column
     private String latitude;
 
     @Column
     private String longitude;
+
 }
