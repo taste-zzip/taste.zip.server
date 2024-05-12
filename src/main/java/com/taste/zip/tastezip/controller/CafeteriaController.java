@@ -5,6 +5,7 @@ import com.taste.zip.tastezip.service.CafeteriaService;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,10 +20,8 @@ public class CafeteriaController {
     private final CafeteriaService cafeteriaService;
 
     @GetMapping("/cafeteria/list")
-    public ResponseEntity<Page<CafeteriaResponse>> findCafeteriaByKeyword(@RequestParam(value = "keyword") String keyword,
-                                                                          @RequestParam @Positive int page,
-                                                                          @RequestParam @Positive int size) {
-        Page<CafeteriaResponse> responses = cafeteriaService.findByKeyword(keyword, page, size);
+    public ResponseEntity<Page<CafeteriaResponse>> findCafeteriaByKeyword(@RequestParam(value = "keyword") String keyword, Pageable pageable) {
+        Page<CafeteriaResponse> responses = cafeteriaService.findByKeyword(keyword, pageable);
         return ResponseEntity.ok(responses);
     }
 
