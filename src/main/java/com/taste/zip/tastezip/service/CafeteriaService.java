@@ -1,13 +1,10 @@
 package com.taste.zip.tastezip.service;
 
 import com.taste.zip.tastezip.dto.CafeteriaResponse;
-import com.taste.zip.tastezip.entity.Cafeteria;
 import com.taste.zip.tastezip.repository.CafeteriaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
