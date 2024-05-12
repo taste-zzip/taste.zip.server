@@ -2,9 +2,12 @@ package com.taste.zip.tastezip.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,11 +30,31 @@ public class Cafeteria {
     private String type;
 
     @Column
-    private String address;
+    private String streetAddress;
+
+    @Column
+    private String landAddress;
+
+    @Column
+    private String city;
+
+    @Column
+    private String district;
+
+    @Column
+    private String neighborhood;
 
     @Column
     private String latitude;
 
     @Column
     private String longitude;
+
+    @OneToMany(mappedBy = "cafeteria", fetch = FetchType.LAZY)
+    private List<Video> videos;
+
+    public int getVideoCnt() {
+        return videos != null ? videos.size() : 0;
+    }
+
 }
