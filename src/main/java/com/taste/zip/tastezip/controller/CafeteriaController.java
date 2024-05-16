@@ -43,8 +43,8 @@ public class CafeteriaController {
     @GetMapping("/cafeteria/list")
     public ResponseEntity<Page<CafeteriaResponse>> findCafeteriaByKeyword(
         @RequestParam(value = "keyword") String keyword,
-        Pageable pageable,
-        @AccessToken TokenDetail tokenDetail
+        @Parameter(description = "sort는 name,asc처럼 column,direction을 적으면 된다.") Pageable pageable,
+        @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
     ) {
         Page<CafeteriaResponse> responses = cafeteriaService.findByKeyword(keyword, pageable, tokenDetail);
         return ResponseEntity.ok(responses);
