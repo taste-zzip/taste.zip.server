@@ -34,9 +34,9 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 
     // JWT
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
     // Validation
 	implementation 'org.springframework.boot:spring-boot-starter-validation'

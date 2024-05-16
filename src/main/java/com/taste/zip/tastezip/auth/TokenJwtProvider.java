@@ -6,15 +6,18 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import java.lang.reflect.Field;
 import java.security.Key;
+import java.security.PrivateKey;
 import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.SneakyThrows;
 
@@ -32,8 +35,8 @@ public class TokenJwtProvider implements TokenProvider {
     @Override
     public String parseToken(String token)
         throws ExpiredJwtException, MalformedJwtException, SignatureException, IllegalArgumentException {
-        JwtParser parser = Jwts.parserBuilder()
-            .setSigningKey(secretKey)
+        JwtParser parser = Jwts.parser()
+            .verifyWith((SecretKey) secretKey)
             .build();
 
         final Jwt<?, ?> jwt = parser.parse(token);
@@ -46,7 +49,7 @@ public class TokenJwtProvider implements TokenProvider {
             stringBuilder.append(header);
 
             stringBuilder.append(", \"body\": ");
-            final String body = objectMapper.writeValueAsString(jwt.getBody());
+            final String body = objectMapper.writeValueAsString(jwt.getPayload());
             stringBuilder.append(body);
             stringBuilder.append("}");
         } catch (JsonProcessingException e) {
@@ -60,21 +63,21 @@ public class TokenJwtProvider implements TokenProvider {
     public Object getPayload(String token)
         throws ExpiredJwtException, MalformedJwtException, SignatureException, IllegalArgumentException {
 
-        JwtParser parser = Jwts.parserBuilder()
-            .setSigningKey(secretKey)
+        JwtParser parser = Jwts.parser()
+            .verifyWith((SecretKey) secretKey)
             .build();
 
-        return payloadClass.cast(parser.parseClaimsJws(token).getBody());
+        return payloadClass.cast(parser.parseEncryptedClaims(token).getPayload());
     }
 
     @Override
     public boolean isExpired(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(secretKey)
+            Jwts.parser()
+                .verifyWith((SecretKey) secretKey)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseEncryptedClaims(token)
+                .getPayload();
         } catch (ExpiredJwtException e) {
             return true;
         }
@@ -98,13 +101,15 @@ public class TokenJwtProvider implements TokenProvider {
             Object value = field.get(payload);
             claims.put(field.getName(), String.valueOf(value));
         }
+        claims.put("type", tokenType.name());
 
         return Jwts.builder()
-            .setClaims(claims)
-            .setHeaderParam("type", tokenType.name())
-            .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis() + duration.toMillis()))
             .signWith(secretKey)
+                .header()
+            .and()
+                .claims(claims)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + duration.toMillis()))
             .compact();
     }
 }
