@@ -7,6 +7,10 @@ public record CafeteriaResponse(
     String name,
     String type,
     String streetAddress,
+    String landAddress,
+    String city,
+    String district,
+    String neighborhood,
     String latitude,
     String longtitude,
     int videoCnt // 식당에 등록된 영상 개수
@@ -17,6 +21,10 @@ public record CafeteriaResponse(
             cafeteria.getName(),
             cafeteria.getType(),
             cafeteria.getStreetAddress(),
+            cafeteria.getLandAddress(),
+            cafeteria.getCity(),
+            cafeteria.getDistrict(),
+            cafeteria.getNeighborhood(),
             cafeteria.getLatitude(),
             cafeteria.getLongitude(),
             cafeteria.getVideoCnt()
