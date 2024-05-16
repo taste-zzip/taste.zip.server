@@ -24,7 +24,7 @@ public class ControllerExceptionAdvice {
     protected ErrorResponse error500(Exception e) {
         e.printStackTrace();
         return ErrorResponse
-            .builder(e, HttpStatus.INTERNAL_SERVER_ERROR, "internal server error")
+            .builder(e, HttpStatus.INTERNAL_SERVER_ERROR, e.getLocalizedMessage())
             .build();
     }
 

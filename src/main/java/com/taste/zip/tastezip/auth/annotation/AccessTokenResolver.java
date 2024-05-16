@@ -6,6 +6,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
@@ -41,9 +42,7 @@ public class AccessTokenResolver implements HandlerMethodArgumentResolver {
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
         NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        HttpServletRequest request = (HttpServletRequest) webRequest;
-
-        String accessHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String accessHeader = webRequest.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (accessHeader == null || !accessHeader.startsWith(BEARER)) {
             throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "로그인 해라");

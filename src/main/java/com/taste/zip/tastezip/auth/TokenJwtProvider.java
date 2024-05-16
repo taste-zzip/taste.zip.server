@@ -10,22 +10,29 @@ import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.Key;
 import java.security.PrivateKey;
 import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.SneakyThrows;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 
 public class TokenJwtProvider implements TokenProvider {
 
     private final Key secretKey;
     private final Class<?> payloadClass;
-
+    private static final String payloadFieldName = "detail";
+    private static final String typeFieldName = "type";
 
     public TokenJwtProvider(String secretKey, Class<?> payloadClass) {
         this.secretKey = new SecretKeySpec(secretKey.getBytes(), "HmacSHA512");
@@ -53,7 +60,7 @@ public class TokenJwtProvider implements TokenProvider {
             stringBuilder.append(body);
             stringBuilder.append("}");
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new HttpClientErrorException(HttpStatusCode.valueOf(400), e.getLocalizedMessage());
         }
 
         return stringBuilder.toString();
@@ -67,7 +74,18 @@ public class TokenJwtProvider implements TokenProvider {
             .verifyWith((SecretKey) secretKey)
             .build();
 
-        return payloadClass.cast(parser.parseEncryptedClaims(token).getPayload());
+        final Claims payload = parser.parseSignedClaims(token).getPayload();
+
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Object tokenDetail;
+        try {
+            final String jsonDetail = objectMapper.writeValueAsString(payload.get(payloadFieldName));
+            tokenDetail = objectMapper.readValue(jsonDetail, payloadClass);
+        } catch (JsonProcessingException e) {
+            throw new HttpClientErrorException(HttpStatusCode.valueOf(400), e.getLocalizedMessage());
+        }
+
+        return tokenDetail;
     }
 
     @Override
@@ -93,15 +111,10 @@ public class TokenJwtProvider implements TokenProvider {
 
     @SneakyThrows
     private String createJwt(Duration duration, Type tokenType, Object payload) {
-        Map<String, String> claims = new HashMap<>();
+        Map<String, Object> claims = new HashMap<>();
 
-        Field[] fields = payloadClass.getDeclaredFields();
-        for (Field field : fields) {
-            field.setAccessible(true);
-            Object value = field.get(payload);
-            claims.put(field.getName(), String.valueOf(value));
-        }
-        claims.put("type", tokenType.name());
+        claims.put(typeFieldName, tokenType.name());
+        claims.put(payloadFieldName, payload);
 
         return Jwts.builder()
             .signWith(secretKey)
