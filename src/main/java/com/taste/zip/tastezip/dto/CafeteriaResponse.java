@@ -12,7 +12,7 @@ public record CafeteriaResponse(
     String district,
     String neighborhood,
     String latitude,
-    String longtitude,
+    String longitude,
     int videoCnt // 식당에 등록된 영상 개수
     ) {
     public static CafeteriaResponse from(Cafeteria cafeteria) {
