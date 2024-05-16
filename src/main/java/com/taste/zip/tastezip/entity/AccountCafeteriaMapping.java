@@ -1,6 +1,7 @@
 package com.taste.zip.tastezip.entity;
 
-import com.taste.zip.tastezip.entity.enumeration.NameConverter;
+import com.taste.zip.tastezip.entity.enumeration.converter.AccountCafeteriaMappingTypeConverter;
+import com.taste.zip.tastezip.entity.enumeration.converter.AccountTypeConverter;
 import com.taste.zip.tastezip.entity.enumeration.AccountCafeteriaMappingType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -21,14 +22,14 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AccountCafeteriaMapping {
+public class AccountCafeteriaMapping extends AuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
-    @Convert(converter = NameConverter.class)
+    @Convert(converter = AccountCafeteriaMappingTypeConverter.class)
     private AccountCafeteriaMappingType type;
 
     @ManyToOne(fetch = FetchType.LAZY)

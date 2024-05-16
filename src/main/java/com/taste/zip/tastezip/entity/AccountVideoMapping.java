@@ -1,7 +1,8 @@
 package com.taste.zip.tastezip.entity;
 
-import com.taste.zip.tastezip.entity.enumeration.NameConverter;
+import com.taste.zip.tastezip.entity.enumeration.converter.AccountTypeConverter;
 import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType;
+import com.taste.zip.tastezip.entity.enumeration.converter.AccountVideoMappingTypeConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -21,14 +22,14 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AccountVideoMapping {
+public class AccountVideoMapping extends AuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
-    @Convert(converter = NameConverter.class)
+    @Convert(converter = AccountVideoMappingTypeConverter.class)
     private AccountVideoMappingType type;
 
     @Column
