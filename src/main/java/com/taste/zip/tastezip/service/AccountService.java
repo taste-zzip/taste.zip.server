@@ -44,6 +44,8 @@ public class AccountService {
     private final TokenProvider tokenProvider;
     private final MessageSource messageSource;
 
+
+
     /**
      * Registers new account for service
      * @exception Throw HttpClientErrorException(409 error) when (request.oauth.type, request.oauth.oauthPk) have to be unique

@@ -38,6 +38,9 @@ public class ControllerExceptionAdvice {
             .create(e, e.getStatusCode(), e.getLocalizedMessage());
     }
 
+    /**
+     * Catch com.fasterxml.jackson serialization error
+     */
     @ExceptionHandler({ com.fasterxml.jackson.databind.exc.InvalidFormatException.class, org.springframework.http.converter.HttpMessageNotReadableException.class })
     protected ErrorResponse serializationError(com.fasterxml.jackson.databind.exc.InvalidFormatException e1, org.springframework.http.converter.HttpMessageNotReadableException e2) {
         e2.printStackTrace();
@@ -63,5 +66,14 @@ public class ControllerExceptionAdvice {
                 .append("\n");
         });
         return ErrorResponse.create(e, HttpStatus.BAD_REQUEST, stringBuilder.toString());
+    }
+
+    /**
+     * Catch org.springframework.web.bind.MissingServletRequestParameterException which @RequestParam trigger
+     */
+    @ExceptionHandler({ org.springframework.web.bind.MissingServletRequestParameterException.class })
+    protected ErrorResponse parameter(org.springframework.web.bind.MissingServletRequestParameterException e) {
+        return ErrorResponse
+            .create(e, HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
     }
 }
