@@ -5,6 +5,7 @@ import com.taste.zip.tastezip.auth.TokenProvider;
 import com.taste.zip.tastezip.auth.TokenProvider.Type;
 import com.taste.zip.tastezip.auth.annotation.AccessTokenResolver;
 import com.taste.zip.tastezip.dto.AccountDetailResponse;
+import com.taste.zip.tastezip.dto.AccountUpdateRequest;
 import com.taste.zip.tastezip.dto.AuthRegistrationRequest;
 import com.taste.zip.tastezip.dto.AuthRegistrationResponse;
 import com.taste.zip.tastezip.entity.Account;
@@ -170,5 +171,18 @@ public class AccountService {
                 accountConfigList
             )
             .build();
+    }
+
+    @Transactional
+    public Account updateMyAccount(AccountUpdateRequest request, TokenDetail tokenDetail) {
+        final Optional<Account> account = accountRepository.findById(tokenDetail.userId());
+
+        if (account.isEmpty()) {
+            final String errorMessage = messageSource.getMessage("account.find.not-exist",
+                new Object[]{tokenDetail.userId()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, errorMessage);
+        }
+
+        return account.get().update(request);
     }
 }
