@@ -4,6 +4,7 @@ import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.TokenProvider;
 import com.taste.zip.tastezip.auth.TokenProvider.Type;
 import com.taste.zip.tastezip.auth.annotation.AccessTokenResolver;
+import com.taste.zip.tastezip.dto.AccountDetailResponse;
 import com.taste.zip.tastezip.dto.AuthRegistrationRequest;
 import com.taste.zip.tastezip.dto.AuthRegistrationResponse;
 import com.taste.zip.tastezip.entity.Account;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -131,7 +133,7 @@ public class AccountService {
         try {
             parsedToken = tokenProvider.parseToken(token);
         } catch (ExpiredJwtException e) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST,"토큰이 만료되었습니다. 토큰 재발급 API 호출이 필요합니다.");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "토큰이 만료되었습니다. 토큰 재발급 API 호출이 필요합니다.");
         } catch (MalformedJwtException e) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "토큰이 변조되었습니다.");
         } catch (SignatureException e) {
@@ -141,5 +143,32 @@ public class AccountService {
         }
 
         return parsedToken;
+    }
+
+    /**
+     * Returns acccount information of tokenDetial
+     * @exception Throw 404 error when account of tokenDetial doesn't exist
+     * @exception Throw HttpClientErrorException(401 error) when Authorization header is empty or not start with 'Bearer'
+     * @exception Throw HttpClientErrorException(400 error) when given token is weired
+     */
+    public AccountDetailResponse findMyAccount(TokenDetail tokenDetail) {
+        final Optional<Account> account = accountRepository.findById(tokenDetail.userId());
+
+        if (account.isEmpty()) {
+            final String errorMessage = messageSource.getMessage("account.find.not-exist",
+                new Object[]{tokenDetail.userId()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, errorMessage);
+        }
+
+        final List<AccountOAuth> accountOAuthList = accountOAuthRepository.findAllByAccount_Id(account.get().getId());
+        final List<AccountConfig> accountConfigList = accountConfigRepository.findAllByAccount_Id(account.get().getId());
+
+        return AccountDetailResponse
+            .builder(
+                account.get(),
+                accountOAuthList,
+                accountConfigList
+            )
+            .build();
     }
 }
