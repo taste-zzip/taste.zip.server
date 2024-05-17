@@ -29,7 +29,7 @@ public class Comment extends AuditingEntity {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)

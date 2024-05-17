@@ -29,7 +29,7 @@ public class AccountYoutube extends AuditingEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Account account;
 
     @Column
