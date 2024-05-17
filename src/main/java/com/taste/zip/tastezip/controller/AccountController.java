@@ -2,8 +2,10 @@ package com.taste.zip.tastezip.controller;
 
 import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.annotation.AccessToken;
+import com.taste.zip.tastezip.dto.AccountDeleteResponse;
 import com.taste.zip.tastezip.dto.AccountDetailResponse;
 import com.taste.zip.tastezip.dto.AccountUpdateRequest;
+import com.taste.zip.tastezip.dto.AccountUpdateResponse;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +17,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -61,13 +62,13 @@ public class AccountController {
             content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
     })
     @PostMapping("/account")
-    public ResponseEntity<Account> updateMyAccount(
+    public ResponseEntity<AccountUpdateResponse> updateMyAccount(
         @Valid @RequestBody AccountUpdateRequest request,
         @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
     ) {
-        final Account account = accountService.updateMyAccount(request, tokenDetail);
+        final AccountUpdateResponse response = accountService.updateMyAccount(request, tokenDetail);
 
-        return new ResponseEntity<>(account, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @Operation(summary = "내 계정 삭제")
@@ -81,8 +82,8 @@ public class AccountController {
             content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
     })
     @DeleteMapping("/account")
-    public ResponseEntity<Account> deleteMyAccount(@Parameter(hidden = true) @AccessToken TokenDetail tokenDetail) {
-        final Account account = accountService.deleteMyAccount(tokenDetail);
-        return new ResponseEntity<>(account, HttpStatus.CREATED);
+    public ResponseEntity<AccountDeleteResponse> deleteMyAccount(@Parameter(hidden = true) @AccessToken TokenDetail tokenDetail) {
+        final AccountDeleteResponse response = accountService.deleteMyAccount(tokenDetail);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

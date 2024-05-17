@@ -4,10 +4,12 @@ import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.TokenProvider;
 import com.taste.zip.tastezip.auth.TokenProvider.Type;
 import com.taste.zip.tastezip.auth.annotation.AccessTokenResolver;
+import com.taste.zip.tastezip.dto.AccountDeleteResponse;
 import com.taste.zip.tastezip.dto.AccountDetailResponse;
 import com.taste.zip.tastezip.dto.AccountUpdateRequest;
 import com.taste.zip.tastezip.dto.AuthRegistrationRequest;
 import com.taste.zip.tastezip.dto.AuthRegistrationResponse;
+import com.taste.zip.tastezip.dto.AccountUpdateResponse;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountConfig;
 import com.taste.zip.tastezip.entity.AccountOAuth;
@@ -26,11 +28,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
@@ -174,7 +174,7 @@ public class AccountService {
     }
 
     @Transactional
-    public Account updateMyAccount(AccountUpdateRequest request, TokenDetail tokenDetail) {
+    public AccountUpdateResponse updateMyAccount(AccountUpdateRequest request, TokenDetail tokenDetail) {
         final Optional<Account> account = accountRepository.findById(tokenDetail.userId());
 
         if (account.isEmpty()) {
@@ -183,7 +183,7 @@ public class AccountService {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, errorMessage);
         }
 
-        return account.get().update(request);
+        return new AccountUpdateResponse(account.get().update(request));
     }
 
     /**
@@ -193,7 +193,7 @@ public class AccountService {
      * @exception Throw HttpClientErrorException(400 error) when given token is weired
      */
     @Transactional
-    public Account deleteMyAccount(TokenDetail tokenDetail) {
+    public AccountDeleteResponse deleteMyAccount(TokenDetail tokenDetail) {
         final Optional<Account> account = accountRepository.findById(tokenDetail.userId());
 
         if (account.isEmpty()) {
@@ -204,6 +204,6 @@ public class AccountService {
 
         accountRepository.delete(account.get());
 
-        return account.get();
+        return new AccountDeleteResponse(account.get());
     }
 }
