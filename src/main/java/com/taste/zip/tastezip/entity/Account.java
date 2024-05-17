@@ -1,6 +1,6 @@
 package com.taste.zip.tastezip.entity;
 
-import com.taste.zip.tastezip.entity.enumeration.NameConverter;
+import com.taste.zip.tastezip.entity.enumeration.converter.AccountTypeConverter;
 import com.taste.zip.tastezip.entity.enumeration.AccountType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -10,14 +10,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Builder(builderMethodName = "hiddenBuilder")
 @Getter
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Account {
+public class Account extends AuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +48,12 @@ public class Account {
      * Indicates which user's type is
      */
     @Column
-    @Convert(converter = NameConverter.class)
+    @Convert(converter = AccountTypeConverter.class)
     private AccountType type;
+
+    public static AccountBuilder builder(String nickname, AccountType type) {
+        return hiddenBuilder()
+            .nickname(nickname)
+            .type(type);
+    }
 }
