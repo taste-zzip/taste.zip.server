@@ -1,5 +1,6 @@
 package com.taste.zip.tastezip.dto;
 
+import com.taste.zip.tastezip.entity.enumeration.AccountConfigType;
 import com.taste.zip.tastezip.entity.enumeration.AccountType;
 import com.taste.zip.tastezip.entity.enumeration.OAuthType;
 import jakarta.validation.Valid;
@@ -29,13 +30,17 @@ public record AuthRegistrationRequest(
 
     }
 
+    /**
+     * @see com.taste.zip.tastezip.entity.enumeration.AccountConfigType
+     * 필드 이름 잘 맞출 것, 오타 조심!
+     */
     public record Config(
         @NotNull(message = "{account.register.notnull}")
-        Boolean TERM_OF_USE_AGREEMENT,
+        AccountConfigType.Agreement TERM_OF_USE_AGREEMENT,
         @NotNull(message = "{account.register.notnull}")
-        Boolean TERM_OF_GPS_AGREEMENT,
+        AccountConfigType.Agreement TERM_OF_GPS_AGREEMENT,
         @NotNull(message = "{account.register.notnull}")
-        Boolean MARKETING_MESSAGE_AGREEMENT
+        AccountConfigType.Agreement MARKETING_MESSAGE_AGREEMENT
     ) {
 
     }
