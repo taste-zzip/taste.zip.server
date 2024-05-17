@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -66,6 +67,22 @@ public class AccountController {
     ) {
         final Account account = accountService.updateMyAccount(request, tokenDetail);
 
+        return new ResponseEntity<>(account, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "내 계정 삭제")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "토큰이 만료/변조/비유효 할 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "401", description = "Authorization Header를 입력하지 않거나 Bearer로 시작하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "404", description = "토큰 정보에 해당하는 유저가 존재하지 않을 경우",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
+    })
+    @DeleteMapping("/account")
+    public ResponseEntity<Account> deleteMyAccount(@Parameter(hidden = true) @AccessToken TokenDetail tokenDetail) {
+        final Account account = accountService.deleteMyAccount(tokenDetail);
         return new ResponseEntity<>(account, HttpStatus.CREATED);
     }
 }

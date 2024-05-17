@@ -185,4 +185,25 @@ public class AccountService {
 
         return account.get().update(request);
     }
+
+    /**
+     * Delete user entity and other entities related
+     * @exception Throw 404 error when account of tokenDetial doesn't exist
+     * @exception Throw HttpClientErrorException(401 error) when Authorization header is empty or not start with 'Bearer'
+     * @exception Throw HttpClientErrorException(400 error) when given token is weired
+     */
+    @Transactional
+    public Account deleteMyAccount(TokenDetail tokenDetail) {
+        final Optional<Account> account = accountRepository.findById(tokenDetail.userId());
+
+        if (account.isEmpty()) {
+            final String errorMessage = messageSource.getMessage("account.find.not-exist",
+                new Object[]{tokenDetail.userId()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, errorMessage);
+        }
+
+        accountRepository.delete(account.get());
+
+        return account.get();
+    }
 }
