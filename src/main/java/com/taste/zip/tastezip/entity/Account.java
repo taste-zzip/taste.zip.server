@@ -1,5 +1,6 @@
 package com.taste.zip.tastezip.entity;
 
+import com.taste.zip.tastezip.dto.AccountUpdateRequest;
 import com.taste.zip.tastezip.entity.enumeration.converter.AccountTypeConverter;
 import com.taste.zip.tastezip.entity.enumeration.AccountType;
 import jakarta.persistence.Column;
@@ -55,5 +56,13 @@ public class Account extends AuditingEntity {
         return hiddenBuilder()
             .nickname(nickname)
             .type(type);
+    }
+
+    public Account update(AccountUpdateRequest request) {
+        this.nickname = request.nickname();
+        this.bio = request.bio();
+        this.profileImage = request.profileImage();
+        this.type = request.type();
+        return this;
     }
 }

@@ -4,8 +4,12 @@ import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.TokenProvider;
 import com.taste.zip.tastezip.auth.TokenProvider.Type;
 import com.taste.zip.tastezip.auth.annotation.AccessTokenResolver;
+import com.taste.zip.tastezip.dto.AccountDeleteResponse;
+import com.taste.zip.tastezip.dto.AccountDetailResponse;
+import com.taste.zip.tastezip.dto.AccountUpdateRequest;
 import com.taste.zip.tastezip.dto.AuthRegistrationRequest;
 import com.taste.zip.tastezip.dto.AuthRegistrationResponse;
+import com.taste.zip.tastezip.dto.AccountUpdateResponse;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountConfig;
 import com.taste.zip.tastezip.entity.AccountOAuth;
@@ -24,7 +28,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -131,7 +134,7 @@ public class AccountService {
         try {
             parsedToken = tokenProvider.parseToken(token);
         } catch (ExpiredJwtException e) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST,"토큰이 만료되었습니다. 토큰 재발급 API 호출이 필요합니다.");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "토큰이 만료되었습니다. 토큰 재발급 API 호출이 필요합니다.");
         } catch (MalformedJwtException e) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "토큰이 변조되었습니다.");
         } catch (SignatureException e) {
@@ -141,5 +144,66 @@ public class AccountService {
         }
 
         return parsedToken;
+    }
+
+    /**
+     * Returns acccount information of tokenDetial
+     * @exception Throw 404 error when account of tokenDetial doesn't exist
+     * @exception Throw HttpClientErrorException(401 error) when Authorization header is empty or not start with 'Bearer'
+     * @exception Throw HttpClientErrorException(400 error) when given token is weired
+     */
+    public AccountDetailResponse findMyAccount(TokenDetail tokenDetail) {
+        final Optional<Account> account = accountRepository.findById(tokenDetail.userId());
+
+        if (account.isEmpty()) {
+            final String errorMessage = messageSource.getMessage("account.find.not-exist",
+                new Object[]{tokenDetail.userId()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, errorMessage);
+        }
+
+        final List<AccountOAuth> accountOAuthList = accountOAuthRepository.findAllByAccount_Id(account.get().getId());
+        final List<AccountConfig> accountConfigList = accountConfigRepository.findAllByAccount_Id(account.get().getId());
+
+        return AccountDetailResponse
+            .builder(
+                account.get(),
+                accountOAuthList,
+                accountConfigList
+            )
+            .build();
+    }
+
+    @Transactional
+    public AccountUpdateResponse updateMyAccount(AccountUpdateRequest request, TokenDetail tokenDetail) {
+        final Optional<Account> account = accountRepository.findById(tokenDetail.userId());
+
+        if (account.isEmpty()) {
+            final String errorMessage = messageSource.getMessage("account.find.not-exist",
+                new Object[]{tokenDetail.userId()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, errorMessage);
+        }
+
+        return new AccountUpdateResponse(account.get().update(request));
+    }
+
+    /**
+     * Delete user entity and other entities related
+     * @exception Throw 404 error when account of tokenDetial doesn't exist
+     * @exception Throw HttpClientErrorException(401 error) when Authorization header is empty or not start with 'Bearer'
+     * @exception Throw HttpClientErrorException(400 error) when given token is weired
+     */
+    @Transactional
+    public AccountDeleteResponse deleteMyAccount(TokenDetail tokenDetail) {
+        final Optional<Account> account = accountRepository.findById(tokenDetail.userId());
+
+        if (account.isEmpty()) {
+            final String errorMessage = messageSource.getMessage("account.find.not-exist",
+                new Object[]{tokenDetail.userId()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, errorMessage);
+        }
+
+        accountRepository.delete(account.get());
+
+        return new AccountDeleteResponse(account.get());
     }
 }

@@ -33,7 +33,7 @@ public class AccountCafeteriaMapping extends AuditingEntity {
     private AccountCafeteriaMappingType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)

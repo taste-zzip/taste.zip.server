@@ -48,7 +48,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestParam String id) {
         final String token = tokenProvider.createToken(Duration.ofDays(1), Type.ACCESS_TOKEN,
             TokenDetail.builder(Long.valueOf(id)).build());
-        return new ResponseEntity<>(token, HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(token, HttpStatus.OK);
     }
 
     @Operation(summary = "회원가입 (비인가)")
@@ -62,7 +62,7 @@ public class AuthController {
     @PostMapping("/registration")
     public ResponseEntity<AuthRegistrationResponse> registration(@Valid @RequestBody AuthRegistrationRequest request) {
         final AuthRegistrationResponse response = accountService.register(request);
-        return new ResponseEntity<>(response,HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Operation(summary = "토큰 정보 확인")
@@ -80,6 +80,6 @@ public class AuthController {
 
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        return new ResponseEntity<>(parsedToken, headers ,HttpStatusCode.valueOf(200));
+        return new ResponseEntity<>(parsedToken, headers ,HttpStatus.OK);
     }
 }

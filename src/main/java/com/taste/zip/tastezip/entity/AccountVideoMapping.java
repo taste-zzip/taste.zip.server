@@ -36,7 +36,7 @@ public class AccountVideoMapping extends AuditingEntity {
     private String score;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
