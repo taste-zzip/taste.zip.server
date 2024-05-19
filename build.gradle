@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.1.11'
 	id 'io.spring.dependency-management' version '1.1.4'
+    id "org.springdoc.openapi-gradle-plugin" version "1.8.0"
 }
 
 group = 'com.taste.zip'
@@ -22,15 +23,31 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
+	// Data
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'org.postgresql:postgresql'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+    // Validation
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Preprocessor
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+    // Test
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 tasks.named('bootBuildImage') {
