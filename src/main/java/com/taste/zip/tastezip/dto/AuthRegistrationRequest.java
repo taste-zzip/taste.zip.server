@@ -20,12 +20,7 @@ public record AuthRegistrationRequest(
         @NotNull(message = "{field.not-null}")
         OAuthType type,
         @NotNull(message = "{field.not-null}")
-        String oauthPk,
-        String accessToken,
-        String refreshToken,
-        String email,
-        String profileImage,
-        String rawData
+        String code
     ) {
 
     }

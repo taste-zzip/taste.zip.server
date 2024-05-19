@@ -1,5 +1,7 @@
 package com.taste.zip.tastezip.service;
 
+import com.taste.zip.tastezip.auth.OAuthCredential;
+import com.taste.zip.tastezip.auth.OAuthProvider;
 import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.TokenProvider;
 import com.taste.zip.tastezip.auth.TokenProvider.Type;
@@ -10,12 +12,17 @@ import com.taste.zip.tastezip.dto.AccountUpdateRequest;
 import com.taste.zip.tastezip.dto.AuthRegistrationRequest;
 import com.taste.zip.tastezip.dto.AuthRegistrationResponse;
 import com.taste.zip.tastezip.dto.AccountUpdateResponse;
+import com.taste.zip.tastezip.dto.LoginRequest;
+import com.taste.zip.tastezip.dto.LoginResponse;
+import com.taste.zip.tastezip.dto.OAuthLoginUriResponse;
+import com.taste.zip.tastezip.dto.OAuthLoginUriResponse.OAuthLoginUri;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountConfig;
 import com.taste.zip.tastezip.entity.AccountOAuth;
 import com.taste.zip.tastezip.entity.AdminConfig;
 import com.taste.zip.tastezip.entity.enumeration.AccountConfigType;
 import com.taste.zip.tastezip.entity.enumeration.AdminConfigType;
+import com.taste.zip.tastezip.entity.enumeration.OAuthType;
 import com.taste.zip.tastezip.repository.AccountConfigRepository;
 import com.taste.zip.tastezip.repository.AccountOAuthRepository;
 import com.taste.zip.tastezip.repository.AccountRepository;
@@ -23,6 +30,7 @@ import com.taste.zip.tastezip.repository.AdminConfigRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import java.util.List;
@@ -46,8 +54,89 @@ public class AccountService {
     private final AdminConfigRepository adminConfigRepository;
     private final TokenProvider tokenProvider;
     private final MessageSource messageSource;
+    private final List<OAuthProvider> providerList;
 
+    private OAuthProvider findProvider(OAuthType type) {
+        for (OAuthProvider provider : providerList) {
+            if (provider.getType() == type) {
+                return provider;
+            }
+        }
 
+        return null;
+    }
+
+    public OAuthLoginUriResponse findLoginUri(@Nullable OAuthType type) {
+        if (type == null) {
+            return new OAuthLoginUriResponse(
+                providerList.stream()
+                    .map(OAuthLoginUri::of)
+                    .toList()
+            );
+        }
+
+        final OAuthProvider provider = findProvider(type);
+
+        if (provider == null) {
+            final String message = messageSource.getMessage("account.oauth.provider.not-found",
+                new Object[]{type.name()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
+        }
+
+        final OAuthLoginUri loginUri = OAuthLoginUri.of(provider);
+
+        return OAuthLoginUriResponse.builder()
+            .oauth(List.of(loginUri))
+            .build();
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        /**
+         * TODO registration 함수에 중복되는 부분 처리하기
+         */
+        final Optional<AdminConfig> accessTokenConfig = adminConfigRepository.findByType(AdminConfigType.ACCESS_TOKEN_DURATION);
+        final Optional<AdminConfig> refreshTokenConfig = adminConfigRepository.findByType(AdminConfigType.REFRESH_TOKEN_DURATION);
+        if (accessTokenConfig.isEmpty() || refreshTokenConfig.isEmpty()) {
+            throw new HttpClientErrorException(HttpStatus.CONFLICT, messageSource.getMessage("admin.config.no-token-duration", null, null));
+        }
+
+        final OAuthProvider provider = findProvider(request.type());
+
+        if (provider == null) {
+            final String message = messageSource.getMessage("account.oauth.provider.not-found",
+                new Object[]{request.type().name()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
+        }
+
+        final OAuthCredential credential = provider.authorize(request.code());
+
+        if (!accountOAuthRepository.existsByTypeAndOauthPk(request.type(), credential.user().oauthPk())) {
+            final String message = messageSource.getMessage("account.find.not-exist",
+                new Object[]{credential.user().oauthPk()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
+        }
+
+        final Optional<AccountOAuth> accountOAuth = accountOAuthRepository.findByTypeAndOauthPk(request.type(),
+            credential.user().oauthPk());
+        final Long accountId = accountOAuth.get().getAccount().getId();
+
+        /**
+         * TODO registration 함수에 중복되는 부분 처리하기
+         */
+        final TokenDetail tokenDetail = TokenDetail.builder(accountId).build();
+        final String accessToken = tokenProvider.createToken(
+            Duration.ofMinutes(Long.parseLong(accessTokenConfig.get().getValue())),
+            Type.ACCESS_TOKEN,
+            tokenDetail
+        );
+        final String refreshToken = tokenProvider.createToken(
+            Duration.ofMinutes(Long.parseLong(refreshTokenConfig.get().getValue())),
+            Type.REFRESH_TOKEN,
+            tokenDetail
+        );
+
+        return new LoginResponse(tokenDetail, accessToken, refreshToken);
+    }
 
     /**
      * Registers new account for service
@@ -56,10 +145,6 @@ public class AccountService {
      */
     @Transactional
     public AuthRegistrationResponse register(AuthRegistrationRequest request) {
-        if (accountOAuthRepository.existsByTypeAndOauthPk(request.oauth().type(), request.oauth().oauthPk())) {
-            throw new HttpClientErrorException(HttpStatus.CONFLICT, messageSource.getMessage("account.register.duplicated-oauth-pk", null, null));
-        }
-
         final Optional<AdminConfig> accessTokenConfig = adminConfigRepository.findByType(AdminConfigType.ACCESS_TOKEN_DURATION);
         final Optional<AdminConfig> refreshTokenConfig = adminConfigRepository.findByType(AdminConfigType.REFRESH_TOKEN_DURATION);
         if (accessTokenConfig.isEmpty() || refreshTokenConfig.isEmpty()) {
@@ -73,12 +158,24 @@ public class AccountService {
 
         final Account savedAccount = accountRepository.save(newAccount);
 
-        accountOAuthRepository.save(AccountOAuth.builder(savedAccount, request.oauth().type(), request.oauth().oauthPk())
-            .accessToken(request.oauth().accessToken())
-            .refreshToken(request.oauth().refreshToken())
-            .email(request.oauth().email())
-            .profileImage(request.oauth().profileImage())
-            .rawData(request.oauth().rawData())
+        final OAuthProvider provider = findProvider(request.oauth().type());
+        if (provider == null) {
+            final String message = messageSource.getMessage("account.oauth.provider.not-found",
+                new Object[]{request.oauth().type().name()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
+        }
+
+        final OAuthCredential credential = provider.authorize(request.oauth().code());
+        if (accountOAuthRepository.existsByTypeAndOauthPk(request.oauth().type(), credential.user().oauthPk())) {
+            throw new HttpClientErrorException(HttpStatus.CONFLICT, messageSource.getMessage("account.register.duplicated-oauth-pk", null, null));
+        }
+
+        accountOAuthRepository.save(AccountOAuth.builder(savedAccount, request.oauth().type(), credential.user().oauthPk())
+            .accessToken(credential.token().accessToken())
+            .refreshToken(credential.token().refreshToken())
+            .email(credential.user().email())
+            .profileImage(credential.user().profileImage())
+            .rawData(credential.user().rawData())
             .build());
 
         accountConfigRepository.saveAll(
