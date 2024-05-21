@@ -13,6 +13,8 @@ import com.taste.zip.tastezip.repository.AccountCafeteriaMappingRepository;
 import com.taste.zip.tastezip.repository.AccountRepository;
 import com.taste.zip.tastezip.repository.CafeteriaRepository;
 import java.util.Optional;
+
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
@@ -44,6 +46,12 @@ public class CafeteriaService {
         }
 
         return cafeteriaRepository.findByKeyword(keyword, pageable).map(CafeteriaResponse::from);
+    }
+
+    public CafeteriaResponse getById(Long id) {
+        return cafeteriaRepository.findById(id)
+                .map(CafeteriaResponse::from)
+                .orElseThrow(()-> new EntityNotFoundException("Cafeteria not found with id " + id));
     }
 
     @Transactional

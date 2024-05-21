@@ -18,6 +18,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Getter
 @Entity
 @AllArgsConstructor
@@ -33,7 +36,7 @@ public class AccountVideoMapping extends AuditingEntity {
     private AccountVideoMappingType type;
 
     @Column
-    private String score;
+    private double score; // string type을 double로 변경
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
@@ -42,4 +45,32 @@ public class AccountVideoMapping extends AuditingEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Video video;
+
+    public double getAverageScore() {
+
+        List<AccountVideoMapping> scoreMappings = video.getAccountVideoMappings()
+                .stream()
+                .filter(mapping -> mapping.getType() == AccountVideoMappingType.SCORE) // SCORE 타입 매핑 값만 filter
+                .toList();
+
+        if (scoreMappings.isEmpty()) {
+            return 0.0; // SCORE 타입의 값이 없으면 0.0을 반환
+        }
+
+        double totalScore = scoreMappings.stream()
+                .mapToDouble(AccountVideoMapping::getScore)
+                .sum();
+
+        return totalScore / scoreMappings.size();
+    }
+
+    public int getTotalTrophyCount() {
+        List<AccountVideoMapping> trophyMappings = video.getAccountVideoMappings()
+                .stream()
+                .filter(mapping -> mapping.getType() == AccountVideoMappingType.TROPHY) // TROPHY 타입 매핑 값만 filter
+                .toList();
+
+        return trophyMappings.size();
+    }
+
 }
