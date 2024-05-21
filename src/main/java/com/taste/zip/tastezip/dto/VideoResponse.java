@@ -10,7 +10,7 @@ public record VideoResponse(
         VideoPlatform platform,
         String videoPk,
         VideoStatus status,
-        double starCount,
+        double starAverage,
         int trophyCount,
         String videoUrl,
         String thumbnailUrl,
@@ -19,21 +19,21 @@ public record VideoResponse(
 ) {
         public static VideoResponse from(Video video) {
 
-            double starCount = video.getAccountVideoMappings().stream()
+            double starAverage = video.getAccountVideoMappings().stream()
                     .mapToDouble(AccountVideoMapping::getAverageScore)
                     .average()
                     .orElse(0.0);
 
-            int trophyCount = video.getAccountVideoMappings().stream()
-                    .mapToInt(AccountVideoMapping::getTotalTrophyCount)
-                    .sum();
+            int trophyCount = (int) video.getAccountVideoMappings().stream()
+                    .map(AccountVideoMapping::getTotalTrophyCount)
+                    .count();
 
             return new VideoResponse(
                     video.getId(),
                     video.getPlatform(),
                     video.getVideoPk(),
                     video.getStatus(),
-                    starCount,
+                    starAverage,
                     trophyCount,
                     null, null, null, 0 // youtube에서 불러오는 data
 //                    video.getVideoUrl(),

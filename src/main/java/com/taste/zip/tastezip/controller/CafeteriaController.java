@@ -2,11 +2,7 @@ package com.taste.zip.tastezip.controller;
 
 import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.annotation.AccessToken;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingCreateRequest;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingCreateResponse;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteRequest;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteResponse;
-import com.taste.zip.tastezip.dto.CafeteriaResponse;
+import com.taste.zip.tastezip.dto.*;
 import com.taste.zip.tastezip.service.CafeteriaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -62,7 +58,7 @@ public class CafeteriaController {
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
     })
     @GetMapping("/cafeteria/{cafeteriaId}")
-    public ResponseEntity<CafeteriaResponse> findById(@PathVariable Long cafeteriaId) {
+    public ResponseEntity<CafeteriaDetailResponse> findById(@PathVariable Long cafeteriaId) {
         return ResponseEntity.ok(cafeteriaService.getById(cafeteriaId));
     }
 

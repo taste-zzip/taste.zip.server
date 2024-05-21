@@ -35,8 +35,8 @@ public class AccountVideoMapping extends AuditingEntity {
     @Convert(converter = AccountVideoMappingTypeConverter.class)
     private AccountVideoMappingType type;
 
-    @Column
-    private double score; // string type을 double로 변경
+    @Column(nullable = true) // LIKE, TROPHY의 경우 score는 NULL
+    private Double score; // string type을 Double 변경 (nullable 위해 Double인 wrapper class로 선언)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
@@ -50,7 +50,7 @@ public class AccountVideoMapping extends AuditingEntity {
 
         List<AccountVideoMapping> scoreMappings = video.getAccountVideoMappings()
                 .stream()
-                .filter(mapping -> mapping.getType() == AccountVideoMappingType.SCORE) // SCORE 타입 매핑 값만 filter
+                .filter(mapping -> mapping.getType() == AccountVideoMappingType.STAR) // SCORE 타입 매핑 값만 filter
                 .toList();
 
         if (scoreMappings.isEmpty()) {
@@ -65,12 +65,13 @@ public class AccountVideoMapping extends AuditingEntity {
     }
 
     public int getTotalTrophyCount() {
-        List<AccountVideoMapping> trophyMappings = video.getAccountVideoMappings()
+        long trophyCount = video.getAccountVideoMappings()
                 .stream()
-                .filter(mapping -> mapping.getType() == AccountVideoMappingType.TROPHY) // TROPHY 타입 매핑 값만 filter
-                .toList();
+                .filter(mapping -> mapping.getType() == AccountVideoMappingType.TROPHY)
+                .count();
 
-        return trophyMappings.size();
+        return (int) trophyCount;
     }
+
 
 }

@@ -1,11 +1,7 @@
 package com.taste.zip.tastezip.service;
 
 import com.taste.zip.tastezip.auth.TokenDetail;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingCreateRequest;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingCreateResponse;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteRequest;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteResponse;
-import com.taste.zip.tastezip.dto.CafeteriaResponse;
+import com.taste.zip.tastezip.dto.*;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
 import com.taste.zip.tastezip.entity.Cafeteria;
@@ -48,9 +44,9 @@ public class CafeteriaService {
         return cafeteriaRepository.findByKeyword(keyword, pageable).map(CafeteriaResponse::from);
     }
 
-    public CafeteriaResponse getById(Long id) {
+    public CafeteriaDetailResponse getById(Long id) {
         return cafeteriaRepository.findById(id)
-                .map(CafeteriaResponse::from)
+                .map(CafeteriaDetailResponse::from)
                 .orElseThrow(()-> new EntityNotFoundException("Cafeteria not found with id " + id));
     }
 
