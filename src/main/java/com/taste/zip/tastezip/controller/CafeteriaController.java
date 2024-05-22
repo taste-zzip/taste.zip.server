@@ -54,12 +54,15 @@ public class CafeteriaController {
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
             @ApiResponse(responseCode = "401", description = "Authorization Header를 입력하지 않거나 Bearer로 시작하지 않을 때",
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
-            @ApiResponse(responseCode = "404", description = "토큰 정보에 해당하는 유저가 존재하지 않을 때",
+            @ApiResponse(responseCode = "404", description = "토큰 정보에 해당하는 유저가 존재하지 않을 때 / 해당 식당이 존재하지 않을 때",
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
     })
     @GetMapping("/cafeteria/{cafeteriaId}")
-    public ResponseEntity<CafeteriaDetailResponse> findById(@PathVariable Long cafeteriaId) {
-        return ResponseEntity.ok(cafeteriaService.getById(cafeteriaId));
+    public ResponseEntity<CafeteriaDetailResponse> findById(
+        @PathVariable Long cafeteriaId,
+        @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
+    ) {
+        return ResponseEntity.ok(cafeteriaService.getById(cafeteriaId, tokenDetail));
     }
 
     @Operation(summary = "음식점 상호작용 저장")

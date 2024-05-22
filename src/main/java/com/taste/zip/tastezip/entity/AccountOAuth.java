@@ -59,6 +59,15 @@ public class AccountOAuth extends AuditingEntity {
     private String refreshToken;
 
     @Column
+    private Long expireSeconds;
+
+    @Column
+    private String tokenType;
+
+    @Column
+    private String scope;
+
+    @Column
     private String email;
 
     @Column

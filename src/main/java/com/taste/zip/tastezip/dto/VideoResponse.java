@@ -17,7 +17,8 @@ public record VideoResponse(
         String title,
         int viewCount
 ) {
-        public static VideoResponse from(Video video) {
+        public static VideoResponse from(Video video, com.google.api.services.youtube.model.VideoSnippet snippet, com.google.api.services.youtube.model.VideoStatistics statistics) {
+            String youtubeUrl = "https://www.youtube.com/watch?v=";
 
             double starAverage = video.getAccountVideoMappings().stream()
                     .mapToDouble(AccountVideoMapping::getAverageScore)
@@ -29,17 +30,16 @@ public record VideoResponse(
                     .count();
 
             return new VideoResponse(
-                    video.getId(),
-                    video.getPlatform(),
-                    video.getVideoPk(),
-                    video.getStatus(),
-                    starAverage,
-                    trophyCount,
-                    null, null, null, 0 // youtube에서 불러오는 data
-//                    video.getVideoUrl(),
-//                    video.getThumbnailUrl(),
-//                    video.getTitle(),
-//                    video.getViewCount()
+                video.getId(),
+                video.getPlatform(),
+                video.getVideoPk(),
+                video.getStatus(),
+                starAverage,
+                trophyCount,
+                youtubeUrl + video.getVideoPk(),
+                snippet == null ? null : snippet.getThumbnails().getDefault().getUrl(),
+                snippet == null ? null : snippet.getTitle(),
+                statistics == null ? 0 : statistics.getViewCount().intValue()
             );
         }
 

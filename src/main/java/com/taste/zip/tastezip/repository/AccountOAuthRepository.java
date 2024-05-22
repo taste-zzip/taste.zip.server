@@ -11,6 +11,8 @@ public interface AccountOAuthRepository extends JpaRepository<AccountOAuth, Long
 
     boolean existsByTypeAndOauthPk(OAuthType type, String oauthPk);
 
+    Optional<AccountOAuth> findByTypeAndAccount_Id(OAuthType type, Long accountId);
+
     Optional<AccountOAuth> findByTypeAndOauthPk(OAuthType type, String oauthPk);
 
     List<AccountOAuth> findAllByAccount_Id(Long accountId);

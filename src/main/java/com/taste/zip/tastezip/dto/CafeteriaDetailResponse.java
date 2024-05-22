@@ -15,12 +15,7 @@ public record CafeteriaDetailResponse (
         int videoCnt,
         List<VideoResponse> videos
 ){
-    public static CafeteriaDetailResponse from(Cafeteria cafeteria) {
-
-        List<VideoResponse> videoResponses = cafeteria.getVideos().stream()
-                .map(VideoResponse::from)
-                .collect(Collectors.toList());
-
+    public static CafeteriaDetailResponse from(Cafeteria cafeteria, List<VideoResponse> videos) {
         return new CafeteriaDetailResponse(
                 cafeteria.getId(),
                 cafeteria.getName(),
@@ -29,7 +24,7 @@ public record CafeteriaDetailResponse (
                 cafeteria.getLatitude(),
                 cafeteria.getLongitude(),
                 cafeteria.getVideoCnt(),
-                videoResponses
+                videos
         );
     }
 

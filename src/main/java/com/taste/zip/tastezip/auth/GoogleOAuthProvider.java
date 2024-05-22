@@ -7,6 +7,8 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.OAuth2Utils;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -15,6 +17,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.oauth2.Oauth2;
 import com.google.api.services.oauth2.Oauth2.Builder;
 import com.google.api.services.oauth2.model.Userinfo;
+import com.google.api.services.youtube.YouTube;
 import com.taste.zip.tastezip.entity.enumeration.OAuthType;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,6 +25,7 @@ import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -114,6 +118,20 @@ public class GoogleOAuthProvider implements OAuthProvider {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    /**
+     * API 호출자 마다 다른 Youtube API Client 객체를 반환한다 (depensive)
+     */
+    public YouTube createYoutubeClient(TokenResponse tokenResponse) {
+        Credential credential = null;
+        try {
+            credential = flow.createAndStoreCredential(tokenResponse, null);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+
+        return new YouTube(httpTransport, jsonFactory, credential);
     }
 
     private GoogleClientSecrets loadSecret() {
