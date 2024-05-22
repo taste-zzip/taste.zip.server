@@ -5,6 +5,8 @@ import com.taste.zip.tastezip.entity.AccountVideoMapping;
 import com.taste.zip.tastezip.entity.Cafeteria;
 import com.taste.zip.tastezip.entity.Video;
 import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType;
+import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType.Like;
+import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType.Trophy;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -16,7 +18,7 @@ public record VideoFeedResponse(
 
     @Builder
     public record Feed(
-        @JsonIgnoreProperties(value = { "cafeteria" })
+        @JsonIgnoreProperties(value = { "cafeteria", "accountVideoMappings" })
         Video video,
         @JsonIgnoreProperties(value = { "videos", "videoCnt", "hibernateLazyInitializer", "handler" })
         Cafeteria cafeteria,
@@ -36,21 +38,24 @@ public record VideoFeedResponse(
     @Builder(access = AccessLevel.PRIVATE)
     public record AccountMapping(
         AccountVideoMappingType.Like LIKE,
-        Integer TROPHY,
-        Integer SCORE
+        AccountVideoMappingType.Trophy TROPHY,
+        Double STAR
     ) {
         public static AccountMapping of(List<AccountVideoMapping> mappingList) {
             AccountVideoMappingType.Like like = null;
-            Integer trophy = null;
-            Integer score = null;
+            AccountVideoMappingType.Trophy trophy = null;
+            Double star = null;
 
             for (AccountVideoMapping mapping : mappingList) {
                 switch (mapping.getType()) {
                     case LIKE -> {
-                        like = AccountVideoMappingType.Like.valueOf(mapping.getScore());
+                        like = Like.LIKE;
                     }
-                    case TROPHY, SCORE -> {
-                        trophy = Integer.parseInt(mapping.getScore());
+                    case TROPHY -> {
+                        trophy = Trophy.TROPHY;
+                    }
+                    case STAR -> {
+                        star = mapping.getScore();
                     }
                 }
             }
@@ -58,7 +63,7 @@ public record VideoFeedResponse(
             return AccountMapping.builder()
                 .LIKE(like)
                 .TROPHY(trophy)
-                .SCORE(score)
+                .STAR(star)
                 .build();
         }
     }

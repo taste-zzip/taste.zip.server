@@ -50,9 +50,6 @@ public class GoogleOAuthProvider implements OAuthProvider {
 
     private final GoogleAuthorizationCodeFlow flow;
 
-    private YouTube youTube;
-
-
     public GoogleOAuthProvider(List<String> scopes, String secretLocation, URI callbackUri) {
         this.httpTransport = new NetHttpTransport();
         this.jsonFactory = new GsonFactory();

@@ -14,11 +14,11 @@ public enum AccountVideoMappingType {
     /**
      * 트로피 점수 (이상형 월드컵)
      */
-    TROPHY(Integer.class),
+    TROPHY(Trophy.class),
     /**
      * 평점
      */
-    SCORE(Integer.class);
+    STAR(Double.class);
 
     public enum Like {
         LIKE
@@ -26,6 +26,10 @@ public enum AccountVideoMappingType {
         /**
          * TODO 싫어요 생기면 DISLIKE 추가
          */
+    }
+
+    public enum Trophy {
+        TROPHY
     }
 
     private final Class<?> valueClassType;
