@@ -53,14 +53,8 @@ public class SecurityConfig {
         return new TokenJwtProvider(authSeed, TokenDetail.class);
     }
 
-    /**
-     * com.taste.zip.tastezip.entity.enumeration.OAuthType에 정의된 provider들을 등록할 수 있음
-     */
     @Bean
-    List<OAuthProvider> oAuthProviderList() {
-        final List<OAuthProvider> arrayList = new ArrayList<>();
-
-        // GOOGLE
+    GoogleOAuthProvider googleOAuthProvider() {
         /**
          * TODO type-safe scope 정의하기
          */
@@ -75,11 +69,20 @@ public class SecurityConfig {
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }
-        final GoogleOAuthProvider googleOAuthProvider = new GoogleOAuthProvider(scopes, googleSecretPath, callback);
 
-        // TODO 릴스도 확장되면 instagram도 추가하기
+        return new GoogleOAuthProvider(scopes, googleSecretPath, callback);
+    }
+
+    /**
+     * com.taste.zip.tastezip.entity.enumeration.OAuthType에 정의된 provider들을 등록할 수 있음
+     */
+    @Bean
+    List<OAuthProvider> oAuthProviderList(GoogleOAuthProvider googleOAuthProvider) {
+        final List<OAuthProvider> arrayList = new ArrayList<>();
 
         arrayList.add(googleOAuthProvider);
+
+        // TODO 릴스도 확장되면 instagram도 추가하기
 
         return arrayList;
     }
