@@ -74,7 +74,6 @@ public record VideoFeedResponse(
         String channelId,
         String title,
         String description,
-        String thumbnail,
         Long viewCount,
         Long likeCount,
         Long favoriteCount,
@@ -86,7 +85,6 @@ public record VideoFeedResponse(
                 .channelId(snippet == null ? null : snippet.getChannelId())
                 .title(snippet == null ? null : snippet.getTitle())
                 .description(snippet == null ? null : snippet.getDescription())
-                .thumbnail(snippet == null ? null : snippet.getThumbnails().getStandard().getUrl())
                 .viewCount(statistics == null ? null : statistics.getViewCount().longValue())
                 .likeCount(statistics == null ? null : statistics.getLikeCount().longValue())
                 .favoriteCount(statistics == null ? null : statistics.getFavoriteCount().longValue())
