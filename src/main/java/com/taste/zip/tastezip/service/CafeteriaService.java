@@ -12,13 +12,16 @@ import com.taste.zip.tastezip.dto.*;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
 import com.taste.zip.tastezip.entity.AccountOAuth;
+import com.taste.zip.tastezip.entity.AccountVideoMapping;
 import com.taste.zip.tastezip.entity.Cafeteria;
 import com.taste.zip.tastezip.entity.Video;
+import com.taste.zip.tastezip.entity.enumeration.AccountCafeteriaMappingType;
 import com.taste.zip.tastezip.entity.enumeration.OAuthType;
 import com.taste.zip.tastezip.entity.enumeration.VideoPlatform;
 import com.taste.zip.tastezip.repository.AccountCafeteriaMappingRepository;
 import com.taste.zip.tastezip.repository.AccountOAuthRepository;
 import com.taste.zip.tastezip.repository.AccountRepository;
+import com.taste.zip.tastezip.repository.AccountVideoMappingRepository;
 import com.taste.zip.tastezip.repository.CafeteriaRepository;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,6 +48,7 @@ public class CafeteriaService {
     private final AccountOAuthRepository accountOAuthRepository;
     private final CafeteriaRepository cafeteriaRepository;
     private final AccountCafeteriaMappingRepository accountCafeteriaMappingRepository;
+    private final AccountVideoMappingRepository accountVideoMappingRepository;
     private final MessageSource messageSource;
     private final GoogleOAuthProvider googleOAuthProvider;
 
@@ -105,7 +109,10 @@ public class CafeteriaService {
                 }
             }
 
-            videoResponses.add(VideoResponse.from(video, snippet, statistics));
+            final List<AccountVideoMapping> videoMappings = accountVideoMappingRepository.findAllByAccount_IdAndVideoId(
+                tokenDetail.userId(), video.getId());
+
+            videoResponses.add(VideoResponse.from(video, snippet, statistics, VideoResponse.AccountMapping.of(videoMappings)));
         }
 
         return CafeteriaDetailResponse.from(cafeteria, videoResponses);
@@ -157,5 +164,19 @@ public class CafeteriaService {
         return AccountCafeteriaMappingDeleteResponse
             .builder(saved.get())
             .build();
+    }
+
+    public CafeteriaLikeResponse getCafeteriaLiked(TokenDetail tokenDetail) {
+        if (!accountRepository.existsById(tokenDetail.userId())) {
+            final String message = messageSource.getMessage("account.find.not-exist",
+                new Object[]{tokenDetail.userId()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
+        }
+
+        final List<AccountCafeteriaMapping> likeMappings = accountCafeteriaMappingRepository.findAllByTypeAndAccount_Id(
+            AccountCafeteriaMappingType.LIKE, tokenDetail.userId());
+        final List<Cafeteria> cafeteriaList = likeMappings.stream().map(AccountCafeteriaMapping::getCafeteria).toList();
+
+        return new CafeteriaLikeResponse(cafeteriaList);
     }
 }

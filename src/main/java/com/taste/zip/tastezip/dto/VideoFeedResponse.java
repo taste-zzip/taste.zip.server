@@ -101,7 +101,6 @@ public record VideoFeedResponse(
         String title,
         String description,
         String customId,
-        String thumbnail,
         Long viewCount,
         Long subscriberCount,
         Long videoCount,
@@ -115,7 +114,6 @@ public record VideoFeedResponse(
                 .title(snippet == null ? null : snippet.getTitle())
                 .description(snippet == null ? null : snippet.getDescription())
                 .customId(snippet == null ? null : snippet.getCustomUrl())
-                .thumbnail(snippet == null ? null : snippet.getThumbnails().getStandard().getUrl())
                 .viewCount(statistics == null ? null : statistics.getViewCount().longValue())
                 .subscriberCount(statistics == null ? null : statistics.getSubscriberCount().longValue())
                 .videoCount(statistics == null ? null : statistics.getVideoCount().longValue())

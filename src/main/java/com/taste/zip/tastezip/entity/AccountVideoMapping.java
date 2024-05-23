@@ -1,5 +1,7 @@
 package com.taste.zip.tastezip.entity;
 
+import com.taste.zip.tastezip.entity.AccountCafeteriaMapping.AccountCafeteriaMappingBuilder;
+import com.taste.zip.tastezip.entity.enumeration.AccountCafeteriaMappingType;
 import com.taste.zip.tastezip.entity.enumeration.converter.AccountTypeConverter;
 import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType;
 import com.taste.zip.tastezip.entity.enumeration.converter.AccountVideoMappingTypeConverter;
@@ -13,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
@@ -21,6 +24,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Builder(builderMethodName = "hiddenBuilder")
 @Getter
 @Entity
 @AllArgsConstructor
@@ -73,5 +77,10 @@ public class AccountVideoMapping extends AuditingEntity {
         return (int) trophyCount;
     }
 
-
+    public static AccountVideoMappingBuilder builder(AccountVideoMappingType type, Account account, Video video) {
+        return hiddenBuilder()
+            .type(type)
+            .account(account)
+            .video(video);
+    }
 }
