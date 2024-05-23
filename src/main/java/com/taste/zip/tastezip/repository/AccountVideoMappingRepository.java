@@ -10,4 +10,6 @@ public interface AccountVideoMappingRepository extends JpaRepository<AccountVide
     List<AccountVideoMapping> findAllByAccount_IdAndVideoId(Long accountId, Long videoId);
 
     long countAllByVideoIdAndType(Long videoId, AccountVideoMappingType type);
+
+    boolean existsByTypeAndAccountIdAndVideoId(AccountVideoMappingType type, Long accountId, Long videoId);
 }
