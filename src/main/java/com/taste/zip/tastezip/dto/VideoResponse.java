@@ -82,9 +82,9 @@ public record VideoResponse(
                 starAverage,
                 trophyCount,
                 youtubeUrl + video.getVideoPk(),
-                snippet == null ? null : snippet.getThumbnails().getStandard().getUrl(),
+                snippet == null || snippet.getThumbnails() == null || snippet.getThumbnails().getStandard() == null ? null : snippet.getThumbnails().getStandard().getUrl(),
                 snippet == null ? null : snippet.getTitle(),
-                statistics == null ? 0 : statistics.getViewCount().intValue(),
+                statistics == null || statistics.getViewCount() == null ? 0 : statistics.getViewCount().intValue(),
                 mapping
             );
         }

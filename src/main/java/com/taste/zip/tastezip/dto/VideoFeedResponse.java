@@ -86,11 +86,11 @@ public record VideoFeedResponse(
                 .channelId(snippet == null ? null : snippet.getChannelId())
                 .title(snippet == null ? null : snippet.getTitle())
                 .description(snippet == null ? null : snippet.getDescription())
-                .thumbnail(snippet == null ? null : snippet.getThumbnails().getStandard().getUrl())
-                .viewCount(statistics == null ? null : statistics.getViewCount().longValue())
-                .likeCount(statistics == null ? null : statistics.getLikeCount().longValue())
-                .favoriteCount(statistics == null ? null : statistics.getFavoriteCount().longValue())
-                .commentCount(statistics == null ? null : statistics.getCommentCount().longValue())
+                .thumbnail(snippet == null || snippet.getThumbnails() == null || snippet.getThumbnails().getStandard() == null ? null : snippet.getThumbnails().getStandard().getUrl())
+                .viewCount(statistics == null || statistics.getViewCount() == null ? null : statistics.getViewCount().longValue())
+                .likeCount(statistics == null || statistics.getLikeCount() == null ? null : statistics.getLikeCount().longValue())
+                .favoriteCount(statistics == null || statistics.getFavoriteCount() == null ? null : statistics.getFavoriteCount().longValue())
+                .commentCount(statistics == null || statistics.getCommentCount() == null ? null : statistics.getCommentCount().longValue())
                 .build();
         }
     }
@@ -114,10 +114,10 @@ public record VideoFeedResponse(
                 .title(snippet == null ? null : snippet.getTitle())
                 .description(snippet == null ? null : snippet.getDescription())
                 .customId(snippet == null ? null : snippet.getCustomUrl())
-                .viewCount(statistics == null ? null : statistics.getViewCount().longValue())
-                .subscriberCount(statistics == null ? null : statistics.getSubscriberCount().longValue())
-                .videoCount(statistics == null ? null : statistics.getVideoCount().longValue())
-                .channelUrl(snippet == null ? null : youtubeUrl + snippet.getCustomUrl())
+                .viewCount(statistics == null || statistics.getViewCount() == null ? 0L : statistics.getViewCount().longValue())
+                .subscriberCount(statistics == null || statistics.getSubscriberCount() == null ? 0L : statistics.getSubscriberCount().longValue())
+                .videoCount(statistics == null || statistics.getVideoCount() == null ? 0L : statistics.getVideoCount().longValue())
+                .channelUrl(snippet == null || snippet.getCustomUrl() == null ? null : youtubeUrl + snippet.getCustomUrl())
                 .build();
         }
     }
