@@ -14,6 +14,7 @@ import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
 import com.taste.zip.tastezip.entity.AccountOAuth;
 import com.taste.zip.tastezip.entity.Cafeteria;
 import com.taste.zip.tastezip.entity.Video;
+import com.taste.zip.tastezip.entity.enumeration.AccountCafeteriaMappingType;
 import com.taste.zip.tastezip.entity.enumeration.OAuthType;
 import com.taste.zip.tastezip.entity.enumeration.VideoPlatform;
 import com.taste.zip.tastezip.repository.AccountCafeteriaMappingRepository;
@@ -157,5 +158,19 @@ public class CafeteriaService {
         return AccountCafeteriaMappingDeleteResponse
             .builder(saved.get())
             .build();
+    }
+
+    public CafeteriaLikeResponse getCafeteriaLiked(TokenDetail tokenDetail) {
+        if (!accountRepository.existsById(tokenDetail.userId())) {
+            final String message = messageSource.getMessage("account.find.not-exist",
+                new Object[]{tokenDetail.userId()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
+        }
+
+        final List<AccountCafeteriaMapping> likeMappings = accountCafeteriaMappingRepository.findAllByTypeAndAccount_Id(
+            AccountCafeteriaMappingType.LIKE, tokenDetail.userId());
+        final List<Cafeteria> cafeteriaList = likeMappings.stream().map(AccountCafeteriaMapping::getCafeteria).toList();
+
+        return new CafeteriaLikeResponse(cafeteriaList);
     }
 }

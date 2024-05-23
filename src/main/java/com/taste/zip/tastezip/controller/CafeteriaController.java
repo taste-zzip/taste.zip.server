@@ -47,6 +47,25 @@ public class CafeteriaController {
         return ResponseEntity.ok(responses);
     }
 
+    /**
+     * Temporary API for middle-demo
+     */
+    @Operation(summary = "좋아요한 모든 음식점 조회")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "토큰이 만료/변조/비유효 할 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "401", description = "Authorization Header를 입력하지 않거나 Bearer로 시작하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "404", description = "토큰 정보에 해당하는 유저가 존재하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
+    })
+    @GetMapping("/cafeteria/like")
+    public ResponseEntity<CafeteriaLikeResponse> getCafeteriaLiked(@Parameter(hidden = true) @AccessToken TokenDetail tokenDetail) {
+        final CafeteriaLikeResponse response = cafeteriaService.getCafeteriaLiked(tokenDetail);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @Operation(summary = "음식점 단건 조회")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", useReturnTypeSchema = true),
