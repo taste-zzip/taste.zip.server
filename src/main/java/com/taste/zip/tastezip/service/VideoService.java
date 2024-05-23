@@ -10,8 +10,12 @@ import com.taste.zip.tastezip.auth.GoogleOAuthProvider;
 import com.taste.zip.tastezip.auth.OAuthProvider;
 import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.dto.AccountCafeteriaMappingCreateResponse;
+import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteRequest;
+import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteResponse;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateRequest;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateResponse;
+import com.taste.zip.tastezip.dto.AccountVideoMappingDeleteRequest;
+import com.taste.zip.tastezip.dto.AccountVideoMappingDeleteResponse;
 import com.taste.zip.tastezip.dto.VideoFeedResponse;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
@@ -196,6 +200,21 @@ public class VideoService {
             .builder(savedVideoMapping)
             .cafeteriaMapping(savedCafeteriaMapping)
             .youtubeLikeSuccess(likedYoutubeVideo)
+            .build();
+    }
+
+    @Transactional
+    public AccountVideoMappingDeleteResponse deleteInteract(AccountVideoMappingDeleteRequest request, TokenDetail tokenDetail) {
+        if (!accountVideoMappingRepository.existsByTypeAndAccountIdAndVideoId(request.type(), tokenDetail.userId(), request.videoId())) {
+            final String message = messageSource.getMessage("account.video.mapping.find.not-found", new Object[]{request.type(), request.videoId(), tokenDetail.userId()}, null);
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
+        }
+
+        final AccountVideoMapping saved = accountVideoMappingRepository.findByTypeAndAccountIdAndVideoId(request.type(), tokenDetail.userId(), request.videoId()).get();
+        accountVideoMappingRepository.deleteById(saved.getId());
+
+        return AccountVideoMappingDeleteResponse
+            .builder(saved)
             .build();
     }
 }
