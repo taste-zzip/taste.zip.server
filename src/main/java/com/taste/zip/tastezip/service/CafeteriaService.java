@@ -12,6 +12,7 @@ import com.taste.zip.tastezip.dto.*;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
 import com.taste.zip.tastezip.entity.AccountOAuth;
+import com.taste.zip.tastezip.entity.AccountVideoMapping;
 import com.taste.zip.tastezip.entity.Cafeteria;
 import com.taste.zip.tastezip.entity.Video;
 import com.taste.zip.tastezip.entity.enumeration.AccountCafeteriaMappingType;
@@ -20,6 +21,7 @@ import com.taste.zip.tastezip.entity.enumeration.VideoPlatform;
 import com.taste.zip.tastezip.repository.AccountCafeteriaMappingRepository;
 import com.taste.zip.tastezip.repository.AccountOAuthRepository;
 import com.taste.zip.tastezip.repository.AccountRepository;
+import com.taste.zip.tastezip.repository.AccountVideoMappingRepository;
 import com.taste.zip.tastezip.repository.CafeteriaRepository;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ public class CafeteriaService {
     private final AccountOAuthRepository accountOAuthRepository;
     private final CafeteriaRepository cafeteriaRepository;
     private final AccountCafeteriaMappingRepository accountCafeteriaMappingRepository;
+    private final AccountVideoMappingRepository accountVideoMappingRepository;
     private final MessageSource messageSource;
     private final GoogleOAuthProvider googleOAuthProvider;
 
@@ -106,7 +109,10 @@ public class CafeteriaService {
                 }
             }
 
-            videoResponses.add(VideoResponse.from(video, snippet, statistics));
+            final List<AccountVideoMapping> videoMappings = accountVideoMappingRepository.findAllByAccount_IdAndVideoId(
+                tokenDetail.userId(), video.getId());
+
+            videoResponses.add(VideoResponse.from(video, snippet, statistics, VideoResponse.AccountMapping.of(videoMappings)));
         }
 
         return CafeteriaDetailResponse.from(cafeteria, videoResponses);
