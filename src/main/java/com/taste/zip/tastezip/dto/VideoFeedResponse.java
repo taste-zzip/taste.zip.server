@@ -82,15 +82,15 @@ public record VideoFeedResponse(
     ) {
         public static YoutubeVideo of(com.google.api.services.youtube.model.VideoSnippet snippet, com.google.api.services.youtube.model.VideoStatistics statistics) {
             return VideoFeedResponse.YoutubeVideo.builder()
-                .publishedAt(snippet.getPublishedAt().toString())
-                .channelId(snippet.getChannelId())
-                .title(snippet.getTitle())
-                .description(snippet.getDescription())
-                .thumbnail(snippet.getThumbnails().getMaxres().getUrl())
-                .viewCount(statistics.getViewCount().longValue())
-                .likeCount(statistics.getLikeCount().longValue())
-                .favoriteCount(statistics.getFavoriteCount().longValue())
-                .commentCount(statistics.getCommentCount().longValue())
+                .publishedAt(snippet == null ? null : snippet.getPublishedAt().toString())
+                .channelId(snippet == null ? null : snippet.getChannelId())
+                .title(snippet == null ? null : snippet.getTitle())
+                .description(snippet == null ? null : snippet.getDescription())
+                .thumbnail(snippet == null ? null : snippet.getThumbnails().getStandard().getUrl())
+                .viewCount(statistics == null ? null : statistics.getViewCount().longValue())
+                .likeCount(statistics == null ? null : statistics.getLikeCount().longValue())
+                .favoriteCount(statistics == null ? null : statistics.getFavoriteCount().longValue())
+                .commentCount(statistics == null ? null : statistics.getCommentCount().longValue())
                 .build();
         }
     }
@@ -111,15 +111,15 @@ public record VideoFeedResponse(
             String youtubeUrl = "https://www.youtube.com/";
 
             return YoutubeChannel.builder()
-                .publishedAt(snippet.getPublishedAt().toString())
-                .title(snippet.getTitle())
-                .description(snippet.getDescription())
-                .customId(snippet.getCustomUrl())
-                .thumbnail(snippet.getThumbnails().getDefault().getUrl())
-                .viewCount(statistics.getViewCount().longValue())
-                .subscriberCount(statistics.getSubscriberCount().longValue())
-                .videoCount(statistics.getVideoCount().longValue())
-                .channelUrl(youtubeUrl + snippet.getCustomUrl())
+                .publishedAt(snippet == null ? null : snippet.getPublishedAt().toString())
+                .title(snippet == null ? null : snippet.getTitle())
+                .description(snippet == null ? null : snippet.getDescription())
+                .customId(snippet == null ? null : snippet.getCustomUrl())
+                .thumbnail(snippet == null ? null : snippet.getThumbnails().getStandard().getUrl())
+                .viewCount(statistics == null ? null : statistics.getViewCount().longValue())
+                .subscriberCount(statistics == null ? null : statistics.getSubscriberCount().longValue())
+                .videoCount(statistics == null ? null : statistics.getVideoCount().longValue())
+                .channelUrl(snippet == null ? null : youtubeUrl + snippet.getCustomUrl())
                 .build();
         }
     }
