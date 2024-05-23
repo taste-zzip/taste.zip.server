@@ -37,7 +37,7 @@ public record VideoResponse(
                 starAverage,
                 trophyCount,
                 youtubeUrl + video.getVideoPk(),
-                snippet == null ? null : snippet.getThumbnails().getDefault().getUrl(),
+                snippet == null ? null : snippet.getThumbnails().getStandard().getUrl(),
                 snippet == null ? null : snippet.getTitle(),
                 statistics == null ? 0 : statistics.getViewCount().intValue()
             );
