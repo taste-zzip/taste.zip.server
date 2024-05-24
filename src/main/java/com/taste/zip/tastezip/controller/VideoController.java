@@ -2,15 +2,11 @@ package com.taste.zip.tastezip.controller;
 
 import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.annotation.AccessToken;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingCreateRequest;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingCreateResponse;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteRequest;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteResponse;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateRequest;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateResponse;
-import com.taste.zip.tastezip.dto.AccountVideoMappingDeleteRequest;
 import com.taste.zip.tastezip.dto.AccountVideoMappingDeleteResponse;
 import com.taste.zip.tastezip.dto.VideoFeedResponse;
+import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType;
 import com.taste.zip.tastezip.service.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -92,10 +88,11 @@ public class VideoController {
     })
     @DeleteMapping("/video/account")
     public ResponseEntity<AccountVideoMappingDeleteResponse> deleteInteraction(
-        @Valid @RequestBody AccountVideoMappingDeleteRequest request,
+        @RequestParam(required = true) Long videoId,
+        @RequestParam(required = true) AccountVideoMappingType type,
         @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
     ) {
-        final AccountVideoMappingDeleteResponse response = videoService.deleteInteract(request, tokenDetail);
+        final AccountVideoMappingDeleteResponse response = videoService.deleteInteract(videoId, type, tokenDetail);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

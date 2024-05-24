@@ -151,14 +151,14 @@ public class CafeteriaService {
     }
 
     @Transactional
-    public AccountCafeteriaMappingDeleteResponse deleteInteract(AccountCafeteriaMappingDeleteRequest request, TokenDetail tokenDetail) {
-        if (!accountCafeteriaMappingRepository.existsByTypeAndAccount_IdAndCafeteriaId(request.type(), tokenDetail.userId(), request.cafeteriaId())) {
+    public AccountCafeteriaMappingDeleteResponse deleteInteract(Long cafeteriaId, AccountCafeteriaMappingType type, TokenDetail tokenDetail) {
+        if (!accountCafeteriaMappingRepository.existsByTypeAndAccount_IdAndCafeteriaId(type, tokenDetail.userId(), cafeteriaId)) {
             final String message = messageSource.getMessage("account.cafeteria.mapping.find.not-found",
-                new Object[]{request.type(), request.cafeteriaId(), tokenDetail.userId()}, null);
+                new Object[]{type, cafeteriaId, tokenDetail.userId()}, null);
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
         }
 
-        final Optional<AccountCafeteriaMapping> saved = accountCafeteriaMappingRepository.findByTypeAndAccount_IdAndCafeteriaId(request.type(), tokenDetail.userId(), request.cafeteriaId());
+        final Optional<AccountCafeteriaMapping> saved = accountCafeteriaMappingRepository.findByTypeAndAccount_IdAndCafeteriaId(type, tokenDetail.userId(), cafeteriaId);
         accountCafeteriaMappingRepository.deleteById(saved.get().getId());
 
         return AccountCafeteriaMappingDeleteResponse

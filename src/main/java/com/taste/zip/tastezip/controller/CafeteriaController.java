@@ -3,6 +3,7 @@ package com.taste.zip.tastezip.controller;
 import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.annotation.AccessToken;
 import com.taste.zip.tastezip.dto.*;
+import com.taste.zip.tastezip.entity.enumeration.AccountCafeteriaMappingType;
 import com.taste.zip.tastezip.service.CafeteriaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -118,10 +119,11 @@ public class CafeteriaController {
     })
     @DeleteMapping("/cafeteria/account")
     public ResponseEntity<AccountCafeteriaMappingDeleteResponse> deleteInteraction(
-        @Valid @RequestBody AccountCafeteriaMappingDeleteRequest request,
+        @RequestParam(required = true) Long cafeteriaId,
+        @RequestParam(required = true) AccountCafeteriaMappingType type,
         @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
     ) {
-        final AccountCafeteriaMappingDeleteResponse response = cafeteriaService.deleteInteract(request, tokenDetail);
+        final AccountCafeteriaMappingDeleteResponse response = cafeteriaService.deleteInteract(cafeteriaId, type, tokenDetail);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

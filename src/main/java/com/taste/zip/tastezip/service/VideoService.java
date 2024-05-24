@@ -1,20 +1,13 @@
 package com.taste.zip.tastezip.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.api.client.auth.oauth2.TokenResponse;
-import com.google.api.services.oauth2.Oauth2;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.taste.zip.tastezip.auth.GoogleOAuthProvider;
-import com.taste.zip.tastezip.auth.OAuthProvider;
 import com.taste.zip.tastezip.auth.TokenDetail;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingCreateResponse;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteRequest;
-import com.taste.zip.tastezip.dto.AccountCafeteriaMappingDeleteResponse;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateRequest;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateResponse;
-import com.taste.zip.tastezip.dto.AccountVideoMappingDeleteRequest;
 import com.taste.zip.tastezip.dto.AccountVideoMappingDeleteResponse;
 import com.taste.zip.tastezip.dto.VideoFeedResponse;
 import com.taste.zip.tastezip.entity.Account;
@@ -204,13 +197,13 @@ public class VideoService {
     }
 
     @Transactional
-    public AccountVideoMappingDeleteResponse deleteInteract(AccountVideoMappingDeleteRequest request, TokenDetail tokenDetail) {
-        if (!accountVideoMappingRepository.existsByTypeAndAccountIdAndVideoId(request.type(), tokenDetail.userId(), request.videoId())) {
-            final String message = messageSource.getMessage("account.video.mapping.find.not-found", new Object[]{request.type(), request.videoId(), tokenDetail.userId()}, null);
+    public AccountVideoMappingDeleteResponse deleteInteract(Long videoId, AccountVideoMappingType type, TokenDetail tokenDetail) {
+        if (!accountVideoMappingRepository.existsByTypeAndAccountIdAndVideoId(type, tokenDetail.userId(), videoId)) {
+            final String message = messageSource.getMessage("account.video.mapping.find.not-found", new Object[]{type, videoId, tokenDetail.userId()}, null);
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
         }
 
-        final AccountVideoMapping saved = accountVideoMappingRepository.findByTypeAndAccountIdAndVideoId(request.type(), tokenDetail.userId(), request.videoId()).get();
+        final AccountVideoMapping saved = accountVideoMappingRepository.findByTypeAndAccountIdAndVideoId(type, tokenDetail.userId(), videoId).get();
         accountVideoMappingRepository.deleteById(saved.getId());
 
         return AccountVideoMappingDeleteResponse
