@@ -6,6 +6,7 @@ import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.TokenProvider;
 import com.taste.zip.tastezip.auth.TokenProvider.Type;
 import com.taste.zip.tastezip.auth.annotation.AccessTokenResolver;
+import com.taste.zip.tastezip.dto.AccountCreatorRegistrationResponse;
 import com.taste.zip.tastezip.dto.AccountDeleteResponse;
 import com.taste.zip.tastezip.dto.AccountDetailResponse;
 import com.taste.zip.tastezip.dto.AccountUpdateRequest;
@@ -21,6 +22,7 @@ import com.taste.zip.tastezip.entity.AccountConfig;
 import com.taste.zip.tastezip.entity.AccountOAuth;
 import com.taste.zip.tastezip.entity.AdminConfig;
 import com.taste.zip.tastezip.entity.enumeration.AccountConfigType;
+import com.taste.zip.tastezip.entity.enumeration.AccountType;
 import com.taste.zip.tastezip.entity.enumeration.AdminConfigType;
 import com.taste.zip.tastezip.entity.enumeration.OAuthType;
 import com.taste.zip.tastezip.repository.AccountConfigRepository;
@@ -305,5 +307,19 @@ public class AccountService {
         accountRepository.delete(account.get());
 
         return new AccountDeleteResponse(account.get());
+    }
+
+    @Transactional
+    public AccountCreatorRegistrationResponse registerCreator(TokenDetail tokenDetail) {
+        final String message = messageSource.getMessage("account.find.not-exist", new Object[]{tokenDetail.userId()}, null);
+        Account account = accountRepository.findById(tokenDetail.userId())
+            .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, message));
+
+        final Account updated = account.update(AccountType.CREATOR);
+        /**
+         * TODO 크리에이터 관련 비즈니스 로직 작성하기
+         */
+
+        return new AccountCreatorRegistrationResponse(updated);
     }
 }

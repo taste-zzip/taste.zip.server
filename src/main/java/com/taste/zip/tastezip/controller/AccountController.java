@@ -2,6 +2,7 @@ package com.taste.zip.tastezip.controller;
 
 import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.auth.annotation.AccessToken;
+import com.taste.zip.tastezip.dto.AccountCreatorRegistrationResponse;
 import com.taste.zip.tastezip.dto.AccountDeleteResponse;
 import com.taste.zip.tastezip.dto.AccountDetailResponse;
 import com.taste.zip.tastezip.dto.AccountUpdateRequest;
@@ -84,6 +85,22 @@ public class AccountController {
     @DeleteMapping("/account")
     public ResponseEntity<AccountDeleteResponse> deleteMyAccount(@Parameter(hidden = true) @AccessToken TokenDetail tokenDetail) {
         final AccountDeleteResponse response = accountService.deleteMyAccount(tokenDetail);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "계정 크리에이터 등록하기")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "토큰이 만료/변조/비유효 할 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "401", description = "Authorization Header를 입력하지 않거나 Bearer로 시작하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "404", description = "토큰 정보에 해당하는 유저가 존재하지 않을 경우",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
+    })
+    @PostMapping("/account/creator/registration")
+    public ResponseEntity<AccountCreatorRegistrationResponse> registerCreator(@Parameter(hidden = true) @AccessToken TokenDetail tokenDetail) {
+        final AccountCreatorRegistrationResponse response = accountService.registerCreator(tokenDetail);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
