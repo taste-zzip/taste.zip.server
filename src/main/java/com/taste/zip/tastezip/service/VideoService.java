@@ -9,7 +9,9 @@ import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateRequest;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateResponse;
 import com.taste.zip.tastezip.dto.AccountVideoMappingDeleteResponse;
+import com.taste.zip.tastezip.dto.VideoDetailResponse;
 import com.taste.zip.tastezip.dto.VideoFeedResponse;
+import com.taste.zip.tastezip.dto.VideoFeedResponse.Feed;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
 import com.taste.zip.tastezip.entity.AccountOAuth;
@@ -209,5 +211,77 @@ public class VideoService {
         return AccountVideoMappingDeleteResponse
             .builder(saved)
             .build();
+    }
+
+    public VideoDetailResponse findDetail(Long videoId, TokenDetail tokenDetail) {
+        final String videoMessage = messageSource.getMessage("video.find.not-exist", new Object[]{ videoId }, null);
+        final String accountMessage = messageSource.getMessage("account.find.not-exist", new Object[]{tokenDetail.userId()}, null);
+
+
+        final Account account = accountRepository.findById(tokenDetail.userId())
+            .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, accountMessage));
+        final Video video = videoRepository.findById(videoId)
+            .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, videoMessage));
+        final Cafeteria cafeteria = video.getCafeteria();
+
+        final List<AccountVideoMapping> mappingList = accountVideoMappingRepository.findAllByAccount_IdAndVideoId(tokenDetail.userId(), video.getId());
+
+        final long likeCount = accountVideoMappingRepository.countAllByVideoIdAndType(video.getId(), AccountVideoMappingType.LIKE);
+        final long trophyCount = accountVideoMappingRepository.countAllByVideoIdAndType(video.getId(), AccountVideoMappingType.TROPHY);
+
+        // Youtube Video
+        final Optional<AccountOAuth> accountGoogle = accountOAuthRepository.findByTypeAndAccount_Id(OAuthType.GOOGLE, tokenDetail.userId());
+        YouTube youtubeClient = null;
+        if (accountGoogle.isPresent()) {
+            final AccountOAuth auth = accountGoogle.get();
+            final TokenResponse tokenResponse = new TokenResponse()
+                .setAccessToken(auth.getAccessToken())
+                .setRefreshToken(auth.getRefreshToken())
+                .setExpiresInSeconds(auth.getExpireSeconds())
+                .setTokenType(auth.getTokenType())
+                .setScope(auth.getScope());
+            youtubeClient = googleOAuthProvider.createYoutubeClient(tokenResponse);
+        }
+
+        VideoListResponse videoResponse = null;
+        ChannelListResponse channelResponse = null;
+        if (youtubeClient != null && video.getPlatform() == VideoPlatform.YOUTUBE) {
+            try {
+                videoResponse = youtubeClient.videos().list("id, snippet, statistics")
+                    .setId(video.getVideoPk())
+                    .execute();
+                if (!videoResponse.getItems().isEmpty()) {
+                    channelResponse = youtubeClient.channels().list("id, snippet, statistics")
+                        .setId(videoResponse.getItems().get(0).getSnippet().getChannelId())
+                        .execute();
+                }
+            } catch (IOException e) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, e.getMessage());
+            } catch (Exception e) {
+                videoResponse = null;
+                channelResponse = null;
+            }
+        }
+
+        return new VideoDetailResponse(VideoFeedResponse.Feed.builder()
+            .video(video)
+            .cafeteria(cafeteria)
+            .youtubeVideo(
+                videoResponse != null && !videoResponse.getItems().isEmpty() ?
+                    VideoFeedResponse.YoutubeVideo.of(videoResponse.getItems().get(0).getSnippet(), videoResponse.getItems().get(0).getStatistics())
+                    : null
+            )
+            .youtubeChannel(
+                channelResponse != null && !channelResponse.getItems().isEmpty() ?
+                    VideoFeedResponse.YoutubeChannel.of(channelResponse.getItems().get(0).getSnippet(), channelResponse.getItems().get(0).getStatistics())
+                    : null
+            )
+            .accountVideoMapping(VideoFeedResponse.AccountMapping.of(mappingList))
+            .statistic(VideoFeedResponse.Statistic.builder()
+                .videoLikeCount(likeCount)
+                .videoTrophyCount(trophyCount)
+                .cafeteriaVideoCount((long) cafeteria.getVideos().size())
+                .build())
+            .build());
     }
 }

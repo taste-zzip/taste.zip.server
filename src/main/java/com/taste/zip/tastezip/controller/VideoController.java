@@ -5,6 +5,7 @@ import com.taste.zip.tastezip.auth.annotation.AccessToken;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateRequest;
 import com.taste.zip.tastezip.dto.AccountVideoMappingCreateResponse;
 import com.taste.zip.tastezip.dto.AccountVideoMappingDeleteResponse;
+import com.taste.zip.tastezip.dto.VideoDetailResponse;
 import com.taste.zip.tastezip.dto.VideoFeedResponse;
 import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType;
 import com.taste.zip.tastezip.service.VideoService;
@@ -22,6 +23,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -95,5 +97,24 @@ public class VideoController {
         final AccountVideoMappingDeleteResponse response = videoService.deleteInteract(videoId, type, tokenDetail);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "영상 상세 조회")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "토큰이 만료/변조/비유효 할 때 / 필수 파라미터를 입력하지 않았을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "401", description = "Authorization Header를 입력하지 않거나 Bearer로 시작하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "404", description = "토큰 정보에 해당하는 유저/videoId에 해당하는 영상이 존재하지 않을 경우",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
+    })
+    @GetMapping("/video/{videoId}")
+    public ResponseEntity<VideoDetailResponse> findDetail(
+        @PathVariable Long videoId,
+        @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
+    ) {
+        final VideoDetailResponse response = videoService.findDetail(videoId, tokenDetail);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

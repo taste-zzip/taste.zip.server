@@ -65,4 +65,9 @@ public class Account extends AuditingEntity {
         this.type = request.type();
         return this;
     }
+
+    public Account update(AccountType type) {
+        this.type = type;
+        return this;
+    }
 }
