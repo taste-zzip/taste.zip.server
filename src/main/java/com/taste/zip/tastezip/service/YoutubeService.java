@@ -15,6 +15,7 @@ import com.taste.zip.tastezip.entity.AccountVideoMapping;
 import com.taste.zip.tastezip.entity.Cafeteria;
 import com.taste.zip.tastezip.entity.Video;
 import com.taste.zip.tastezip.entity.enumeration.AccountCafeteriaMappingType;
+import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType;
 import com.taste.zip.tastezip.entity.enumeration.OAuthType;
 import com.taste.zip.tastezip.entity.enumeration.VideoPlatform;
 import com.taste.zip.tastezip.repository.AccountCafeteriaMappingRepository;
@@ -42,6 +43,7 @@ public class YoutubeService {
     private final AccountOAuthRepository accountOAuthRepository;
     private final VideoRepository videoRepository;
     private final AccountCafeteriaMappingRepository accountCafeteriaMappingRepository;
+    private final AccountVideoMappingRepository accountVideoMappingRepository;
     private final MessageSource messageSource;
     private final GoogleOAuthProvider googleOAuthProvider;
 
@@ -75,24 +77,35 @@ public class YoutubeService {
         }
 
         List<Cafeteria> likedCafeteria = new ArrayList<>();
+        List<Video> likedVideo = new ArrayList<>();
         for (com.google.api.services.youtube.model.Video video : videoListResponse.getItems()) {
             final Optional<Video> serviceVideo = videoRepository.findByPlatformAndVideoPk(VideoPlatform.YOUTUBE,
                 video.getId());
 
             if (serviceVideo.isPresent()) {
                 final Cafeteria cafeteria = serviceVideo.get().getCafeteria();
-                final Optional<AccountCafeteriaMapping> likeMapping = accountCafeteriaMappingRepository.findByTypeAndAccount_IdAndCafeteriaId(
+                final Optional<AccountCafeteriaMapping> cafeteriaLike = accountCafeteriaMappingRepository.findByTypeAndAccount_IdAndCafeteriaId(
                     AccountCafeteriaMappingType.LIKE, tokenDetail.userId(), cafeteria.getId());
+                final Optional<AccountVideoMapping> videoLike = accountVideoMappingRepository.findByTypeAndAccountIdAndVideoId(
+                    AccountVideoMappingType.LIKE, tokenDetail.userId(), serviceVideo.get().getId());
 
-                if (likeMapping.isEmpty()) {
+                if (cafeteriaLike.isEmpty()) {
                     accountCafeteriaMappingRepository.save(AccountCafeteriaMapping
                         .builder(AccountCafeteriaMappingType.LIKE, account, cafeteria)
                         .build());
                     likedCafeteria.add(cafeteria);
                 }
+
+                if (videoLike.isEmpty()) {
+                    accountVideoMappingRepository.save(AccountVideoMapping
+                        .builder(AccountVideoMappingType.LIKE, account, serviceVideo.get())
+                        .build()
+                    );
+                    likedVideo.add(serviceVideo.get());
+                }
             }
         }
 
-        return new YoutubeLikeCafeteriaUpdateResponse(likedCafeteria);
+        return new YoutubeLikeCafeteriaUpdateResponse(likedCafeteria, likedVideo);
     }
 }
