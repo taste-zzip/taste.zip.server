@@ -127,4 +127,65 @@ public class CafeteriaController {
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    @Operation(summary = "음식점 댓글 조회")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "토큰이 만료/변조/비유효 할 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "401", description = "Authorization Header를 입력하지 않거나 Bearer로 시작하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "404", description = "토큰 정보에 해당하는 유저 / cafeteriaId에 존재하는 식당이 존재하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
+    })
+    @GetMapping("/cafeteria/{cafeteriaId}/comment")
+    public ResponseEntity<CafeteriaCommentListResponse> readCafeteriaCommentList(
+        @PathVariable(required = true) Long cafeteriaId,
+        Pageable pageable,
+        @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
+    ) {
+        final CafeteriaCommentListResponse response = cafeteriaService.readCafeteriaCommentList(cafeteriaId, pageable, tokenDetail);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Operation(summary = "음식점 댓글 생성")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "토큰이 만료/변조/비유효 할 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "401", description = "Authorization Header를 입력하지 않거나 Bearer로 시작하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "404", description = "토큰 정보에 해당하는 유저 / cafeteriaId에 존재하는 식당이 존재하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
+    })
+    @PostMapping("/cafeteria/{cafeteriaId}/comment")
+    public ResponseEntity<CafeteriaCommentCreateResponse> createCafeteriaComment(
+        @Valid @RequestBody CafeteriaCommentCreateRequest request,
+        @PathVariable(required = true) Long cafeteriaId,
+        @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
+    ) {
+        final CafeteriaCommentCreateResponse response = cafeteriaService.createComment(request, cafeteriaId, tokenDetail);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "음식점 댓글 삭제")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", useReturnTypeSchema = true),
+        @ApiResponse(responseCode = "400", description = "토큰이 만료/변조/비유효 할 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "401", description = "Authorization Header를 입력하지 않거나 Bearer로 시작하지 않을 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "403", description = "Token User가 Comment의 작성자가 아닐 때",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+        @ApiResponse(responseCode = "404", description = "존재하지 않는 유저 / 댓글일 경우",
+            content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+    })
+    @DeleteMapping("/cafeteria/comment/{commentId}")
+    public ResponseEntity<CafeteriaCommentDeleteResponse> deleteCafeteriaComment(
+        @PathVariable(required = true) Long commentId,
+        @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
+    ) {
+        final CafeteriaCommentDeleteResponse response = cafeteriaService.deleteComment(commentId, tokenDetail);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 }
