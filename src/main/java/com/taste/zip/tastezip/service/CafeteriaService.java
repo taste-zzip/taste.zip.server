@@ -9,11 +9,13 @@ import com.google.api.services.youtube.model.VideoStatistics;
 import com.taste.zip.tastezip.auth.GoogleOAuthProvider;
 import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.dto.*;
+import com.taste.zip.tastezip.dto.CafeteriaCommentListResponse.CommentItem;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
 import com.taste.zip.tastezip.entity.AccountOAuth;
 import com.taste.zip.tastezip.entity.AccountVideoMapping;
 import com.taste.zip.tastezip.entity.Cafeteria;
+import com.taste.zip.tastezip.entity.Comment;
 import com.taste.zip.tastezip.entity.Video;
 import com.taste.zip.tastezip.entity.enumeration.AccountCafeteriaMappingType;
 import com.taste.zip.tastezip.entity.enumeration.OAuthType;
@@ -23,9 +25,11 @@ import com.taste.zip.tastezip.repository.AccountOAuthRepository;
 import com.taste.zip.tastezip.repository.AccountRepository;
 import com.taste.zip.tastezip.repository.AccountVideoMappingRepository;
 import com.taste.zip.tastezip.repository.CafeteriaRepository;
+import com.taste.zip.tastezip.repository.CommentRepository;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -33,6 +37,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -49,6 +54,7 @@ public class CafeteriaService {
     private final CafeteriaRepository cafeteriaRepository;
     private final AccountCafeteriaMappingRepository accountCafeteriaMappingRepository;
     private final AccountVideoMappingRepository accountVideoMappingRepository;
+    private final CommentRepository commentRepository;
     private final MessageSource messageSource;
     private final GoogleOAuthProvider googleOAuthProvider;
 
@@ -178,5 +184,57 @@ public class CafeteriaService {
         final List<Cafeteria> cafeteriaList = likeMappings.stream().map(AccountCafeteriaMapping::getCafeteria).toList();
 
         return new CafeteriaLikeResponse(cafeteriaList);
+    }
+
+    public CafeteriaCommentListResponse readCafeteriaCommentList(Long cafeteriaId, Pageable pageable, TokenDetail tokenDetail) {
+        final String accountMessage = messageSource.getMessage("account.find.not-exist", new Object[]{tokenDetail.userId()}, null);
+        final String cafeteriaMessage = messageSource.getMessage("cafeteria.find.not-exist", new Object[]{cafeteriaId}, null);
+
+        accountRepository.findById(tokenDetail.userId())
+            .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, accountMessage));
+        cafeteriaRepository.findById(cafeteriaId)
+            .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, cafeteriaMessage));
+
+        final Page<CommentItem> commentItems = commentRepository.findAllByCafeteriaId(cafeteriaId, pageable)
+            .map(comment -> new CommentItem(comment, comment.getAccount()));
+
+        return new CafeteriaCommentListResponse(commentItems);
+    }
+
+    @Transactional
+    public CafeteriaCommentCreateResponse createComment(CafeteriaCommentCreateRequest request, Long cafeteriaId, TokenDetail tokenDetail) {
+        final String accountMessage = messageSource.getMessage("account.find.not-exist", new Object[]{tokenDetail.userId()}, null);
+        final String cafeteriaMessage = messageSource.getMessage("cafeteria.find.not-exist", new Object[]{cafeteriaId}, null);
+
+        final Account account = accountRepository.findById(tokenDetail.userId())
+            .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, accountMessage));
+        final Cafeteria cafeteria = cafeteriaRepository.findById(cafeteriaId)
+            .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, cafeteriaMessage));
+
+        final Comment saved = commentRepository.save(Comment
+            .builder(request.content(), account, cafeteria)
+            .build());
+
+        return new CafeteriaCommentCreateResponse(saved);
+    }
+
+    @Transactional
+    public CafeteriaCommentDeleteResponse deleteComment(Long commentId, TokenDetail tokenDetail) {
+        final String accountMessage = messageSource.getMessage("account.find.not-exist", new Object[]{tokenDetail.userId()}, null);
+        final String commentMessage = messageSource.getMessage("comment.find.not-exist", new Object[]{commentId}, null);
+        final String commentAuthMessage = messageSource.getMessage("comment.find.not-authorized", new Object[]{tokenDetail.userId(), commentId}, null);
+
+        final Account account = accountRepository.findById(tokenDetail.userId())
+            .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, accountMessage));
+        final Comment comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND, commentMessage));
+
+        if (!Objects.equals(comment.getAccount().getId(), account.getId())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, commentAuthMessage);
+        }
+
+        commentRepository.deleteById(comment.getId());
+
+        return new CafeteriaCommentDeleteResponse(comment);
     }
 }
