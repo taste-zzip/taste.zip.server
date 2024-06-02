@@ -4,13 +4,11 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ChannelListResponse;
 import com.google.api.services.youtube.model.VideoListResponse;
+import com.google.api.services.youtube.model.VideoSnippet;
+import com.google.api.services.youtube.model.VideoStatistics;
 import com.taste.zip.tastezip.auth.GoogleOAuthProvider;
 import com.taste.zip.tastezip.auth.TokenDetail;
-import com.taste.zip.tastezip.dto.AccountVideoMappingCreateRequest;
-import com.taste.zip.tastezip.dto.AccountVideoMappingCreateResponse;
-import com.taste.zip.tastezip.dto.AccountVideoMappingDeleteResponse;
-import com.taste.zip.tastezip.dto.VideoDetailResponse;
-import com.taste.zip.tastezip.dto.VideoFeedResponse;
+import com.taste.zip.tastezip.dto.*;
 import com.taste.zip.tastezip.dto.VideoFeedResponse.Feed;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
@@ -29,6 +27,7 @@ import com.taste.zip.tastezip.repository.AccountVideoMappingRepository;
 import com.taste.zip.tastezip.repository.VideoRepository;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +41,8 @@ import org.springframework.web.client.HttpClientErrorException;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class VideoService {
+
+    private final int WORLD_CUP_LEAST_SIZE = 16;
 
     private final AccountRepository accountRepository;
     private final AccountOAuthRepository accountOAuthRepository;
@@ -283,5 +284,57 @@ public class VideoService {
                 .cafeteriaVideoCount((long) cafeteria.getVideos().size())
                 .build())
             .build());
+    }
+
+    public List<VideoResponse> getWorldCupVideos(TokenDetail tokenDetail) {
+        final List<Video> videos = videoRepository.findAll();
+
+        // 전체 영상이 16개가 안 될 때
+        if (videos.size() < WORLD_CUP_LEAST_SIZE) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Not enough videos available. Required: 16, Available: " + videos.size());
+        }
+
+        final List<VideoResponse> videoResponses = new ArrayList<>();
+
+        // Youtube Video
+        final Optional<AccountOAuth> accountGoogle = accountOAuthRepository.findByTypeAndAccount_Id(OAuthType.GOOGLE, tokenDetail.userId());
+        YouTube youtubeClient = null;
+        if (accountGoogle.isPresent()) {
+            final AccountOAuth auth = accountGoogle.get();
+            final TokenResponse tokenResponse = new TokenResponse()
+                    .setAccessToken(auth.getAccessToken())
+                    .setRefreshToken(auth.getRefreshToken())
+                    .setExpiresInSeconds(auth.getExpireSeconds())
+                    .setTokenType(auth.getTokenType())
+                    .setScope(auth.getScope());
+            youtubeClient = googleOAuthProvider.createYoutubeClient(tokenResponse);
+        }
+
+        Collections.shuffle(videos); // 영상 객체의 순서를 무작위로 섞는다.
+
+        for (int i = 0; i < WORLD_CUP_LEAST_SIZE; i ++) {
+            Video video = videos.get(i);
+            VideoListResponse videoResponse = null;
+            if (youtubeClient != null && video.getPlatform() == VideoPlatform.YOUTUBE) {
+                try {
+                    videoResponse = youtubeClient.videos().list("id, snippet, statistics")
+                            .setId(video.getVideoPk())
+                            .execute();
+                } catch (IOException e) {
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, e.getMessage());
+                }
+            }
+            VideoSnippet snippet = videoResponse != null && !videoResponse.getItems().isEmpty() ? videoResponse.getItems().get(0).getSnippet() : null;
+            VideoStatistics statistics = videoResponse != null && !videoResponse.getItems().isEmpty() ? videoResponse.getItems().get(0).getStatistics() : null;
+
+            // AccountMapping 생성 (예제 데이터를 사용)
+            List<AccountVideoMapping> mappingList = video.getAccountVideoMappings();
+            VideoResponse.AccountMapping accountMapping = VideoResponse.AccountMapping.of(mappingList);
+
+            // VideoResponse 생성
+            VideoResponse videoResponseObj = VideoResponse.from(video, snippet, statistics, accountMapping);
+            videoResponses.add(videoResponseObj);
+        }
+        return videoResponses;
     }
 }
