@@ -10,8 +10,9 @@ public record CafeteriaCommentListResponse(
     Page<CommentItem> commentList
 ) {
     public record CommentItem(
-        @JsonIgnoreProperties(value = { "account", "cafeteria" })
+        @JsonIgnoreProperties(value = { "account", "cafeteria", "hibernateLazyInitializer", "handler" })
         Comment comment,
+        @JsonIgnoreProperties(value = { "hibernateLazyInitializer", "handler" })
         Account account
     ) {
 
