@@ -71,7 +71,7 @@ public record VideoResponse(
                     .orElse(0.0);
 
             int trophyCount = (int) video.getAccountVideoMappings().stream()
-                    .map(AccountVideoMapping::getTotalTrophyCount)
+                    .filter(accountVideoMapping -> accountVideoMapping.getType() == AccountVideoMappingType.TROPHY)
                     .count();
 
             return new VideoResponse(
