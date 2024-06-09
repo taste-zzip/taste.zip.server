@@ -68,15 +68,6 @@ public class AccountVideoMapping extends AuditingEntity {
         return totalScore / scoreMappings.size();
     }
 
-    public int getTotalTrophyCount() {
-        long trophyCount = video.getAccountVideoMappings()
-                .stream()
-                .filter(mapping -> mapping.getType() == AccountVideoMappingType.TROPHY)
-                .count();
-
-        return (int) trophyCount;
-    }
-
     public static AccountVideoMappingBuilder builder(AccountVideoMappingType type, Account account, Video video) {
         return hiddenBuilder()
             .type(type)
