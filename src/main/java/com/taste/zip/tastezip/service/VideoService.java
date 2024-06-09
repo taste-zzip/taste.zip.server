@@ -42,7 +42,7 @@ import org.springframework.web.client.HttpClientErrorException;
 @RequiredArgsConstructor
 public class VideoService {
 
-    private final int WORLD_CUP_LEAST_SIZE = 16;
+    private final int WORLD_CUP_LIST_SIZE = 8; // 8강으로 변경
 
     private final AccountRepository accountRepository;
     private final AccountOAuthRepository accountOAuthRepository;
@@ -290,7 +290,7 @@ public class VideoService {
         final List<Video> videos = videoRepository.findAll();
 
         // 전체 영상이 16개가 안 될 때
-        if (videos.size() < WORLD_CUP_LEAST_SIZE) {
+        if (videos.size() < WORLD_CUP_LIST_SIZE) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Not enough videos available. Required: 16, Available: " + videos.size());
         }
 
@@ -312,7 +312,7 @@ public class VideoService {
 
         Collections.shuffle(videos); // 영상 객체의 순서를 무작위로 섞는다.
 
-        for (int i = 0; i < WORLD_CUP_LEAST_SIZE; i ++) {
+        for (int i = 0; i < WORLD_CUP_LIST_SIZE; i ++) {
             Video video = videos.get(i);
             VideoListResponse videoResponse = null;
             if (youtubeClient != null && video.getPlatform() == VideoPlatform.YOUTUBE) {
