@@ -53,8 +53,15 @@ public class Cafeteria {
     @OneToMany(mappedBy = "cafeteria", fetch = FetchType.LAZY)
     private List<Video> videos;
 
+    @OneToMany(mappedBy = "cafeteria", fetch = FetchType.LAZY)
+    private List<Comment> comments;
+
     public int getVideoCnt() {
         return videos != null ? videos.size() : 0;
+    }
+
+    public int getCommentCnt() {
+        return comments != null ? comments.size() : 0;
     }
 
 }
