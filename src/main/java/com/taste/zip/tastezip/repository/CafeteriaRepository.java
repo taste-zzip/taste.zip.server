@@ -12,7 +12,7 @@ import java.util.List;
 public interface CafeteriaRepository extends JpaRepository<Cafeteria, Long> {
 
     // using JPQL
-    @Query("SELECT c FROM Cafeteria c WHERE c.name LIKE %:keyword% OR c.type LIKE %:keyword%")
+    @Query("SELECT c FROM Cafeteria c, Video v WHERE v.cafeteria.id = c.id AND c.name LIKE %:keyword% OR c.type LIKE %:keyword GROUP BY c.id HAVING count(v) > 0")
     Page<Cafeteria> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     List<Cafeteria> findTop3ByType(String type);
