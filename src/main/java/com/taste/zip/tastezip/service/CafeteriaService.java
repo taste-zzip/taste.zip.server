@@ -10,6 +10,7 @@ import com.taste.zip.tastezip.auth.GoogleOAuthProvider;
 import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.dto.*;
 import com.taste.zip.tastezip.dto.CafeteriaCommentListResponse.CommentItem;
+import com.taste.zip.tastezip.dto.CafeteriaLikeResponse.CafeteriaLike;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
 import com.taste.zip.tastezip.entity.AccountOAuth;
@@ -26,6 +27,7 @@ import com.taste.zip.tastezip.repository.AccountRepository;
 import com.taste.zip.tastezip.repository.AccountVideoMappingRepository;
 import com.taste.zip.tastezip.repository.CafeteriaRepository;
 import com.taste.zip.tastezip.repository.CommentRepository;
+import com.taste.zip.tastezip.repository.VideoRepository;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +57,7 @@ public class CafeteriaService {
     private final AccountCafeteriaMappingRepository accountCafeteriaMappingRepository;
     private final AccountVideoMappingRepository accountVideoMappingRepository;
     private final CommentRepository commentRepository;
+    private final VideoRepository videoRepository;
     private final MessageSource messageSource;
     private final GoogleOAuthProvider googleOAuthProvider;
 
@@ -179,11 +182,18 @@ public class CafeteriaService {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, message);
         }
 
+        final List<CafeteriaLikeResponse.CafeteriaLike> list = new ArrayList<>();
         final List<AccountCafeteriaMapping> likeMappings = accountCafeteriaMappingRepository.findAllByTypeAndAccount_Id(
             AccountCafeteriaMappingType.LIKE, tokenDetail.userId());
         final List<Cafeteria> cafeteriaList = likeMappings.stream().map(AccountCafeteriaMapping::getCafeteria).toList();
 
-        return new CafeteriaLikeResponse(cafeteriaList);
+        for (Cafeteria cafeteria : cafeteriaList) {
+            final List<Video> topVideos = videoRepository.findTopByCafeteriaId(5L, cafeteria.getId());
+
+            list.add(new CafeteriaLike(cafeteria, topVideos));
+        }
+
+        return new CafeteriaLikeResponse(list);
     }
 
     public CafeteriaCommentListResponse readCafeteriaCommentList(Long cafeteriaId, Pageable pageable, TokenDetail tokenDetail) {

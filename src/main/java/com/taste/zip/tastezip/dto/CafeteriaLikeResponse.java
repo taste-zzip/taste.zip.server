@@ -2,11 +2,18 @@ package com.taste.zip.tastezip.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.taste.zip.tastezip.entity.Cafeteria;
+import com.taste.zip.tastezip.entity.Video;
 import java.util.List;
 
 public record CafeteriaLikeResponse(
-    @JsonIgnoreProperties(value = { "videos", "videoCnt", "hibernateLazyInitializer", "handler" })
-    List<Cafeteria> cafeteriaList
+    List<CafeteriaLike> cafeteriaList
 ) {
+    public record CafeteriaLike(
+        @JsonIgnoreProperties(value = { "videos", "videoCnt", "hibernateLazyInitializer", "handler" })
+        Cafeteria cafeteria,
+        @JsonIgnoreProperties(value = { "cafeteria", "accountVideoMappings" })
+        List<Video> videoList
+    ) {
 
+    }
 }

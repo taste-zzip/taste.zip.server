@@ -13,4 +13,7 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
     List<Video> findTopByRandomly(long size, Long accountId);
 
     Optional<Video> findByPlatformAndVideoPk(VideoPlatform platform, String videoPk);
+
+    @Query("SELECT v FROM Video v WHERE v.cafeteria.id = ?2 ORDER BY v.id DESC LIMIT ?1")
+    List<Video> findTopByCafeteriaId(long size, Long cafeteriaId);
 }
