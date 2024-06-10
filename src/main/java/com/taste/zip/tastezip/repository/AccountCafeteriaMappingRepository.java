@@ -12,4 +12,7 @@ public interface AccountCafeteriaMappingRepository extends JpaRepository<Account
     Optional<AccountCafeteriaMapping> findByTypeAndAccount_IdAndCafeteriaId(AccountCafeteriaMappingType type, Long accountId, Long cafeteriaId);
 
     List<AccountCafeteriaMapping> findAllByTypeAndAccount_Id(AccountCafeteriaMappingType type, Long accountId);
+
+    List<AccountCafeteriaMapping> findAllByAccount_Id(Long accountId);
+
 }

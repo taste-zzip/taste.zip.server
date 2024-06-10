@@ -21,6 +21,8 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -188,4 +190,24 @@ public class CafeteriaController {
         final CafeteriaCommentDeleteResponse response = cafeteriaService.deleteComment(commentId, tokenDetail);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    @Operation(summary = "추천")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "400", description = "토큰이 만료/변조/비유효 할 때",
+                    content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+            @ApiResponse(responseCode = "401", description = "Authorization Header를 입력하지 않거나 Bearer로 시작하지 않을 때",
+                    content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) }),
+            @ApiResponse(responseCode = "404", description = "토큰 정보에 해당하는 유저 / cafeteriaId에 존재하는 식당이 존재하지 않을 때",
+                    content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
+    })
+    @GetMapping("/cafeteria/recommendations")
+    public ResponseEntity<List<CafeteriaDetailResponse>> recommend(
+            @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
+    ) {
+        List<CafeteriaDetailResponse> response = cafeteriaService.getRecommendations(tokenDetail);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
+    }
+
 }
