@@ -90,17 +90,10 @@ public class YoutubeService {
                     AccountVideoMappingType.LIKE, tokenDetail.userId(), serviceVideo.get().getId());
 
                 if (cafeteriaLike.isEmpty()) {
-                    accountCafeteriaMappingRepository.save(AccountCafeteriaMapping
-                        .builder(AccountCafeteriaMappingType.LIKE, account, cafeteria)
-                        .build());
                     likedCafeteria.add(cafeteria);
                 }
 
                 if (videoLike.isEmpty()) {
-                    accountVideoMappingRepository.save(AccountVideoMapping
-                        .builder(AccountVideoMappingType.LIKE, account, serviceVideo.get())
-                        .build()
-                    );
                     likedVideo.add(serviceVideo.get());
                 }
             }

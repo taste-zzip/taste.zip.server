@@ -30,7 +30,7 @@ public class YoutubeController {
 
     private final YoutubeService youtubeService;
 
-    @Operation(summary = "최근 좋아요 누른 Youtube 영상에 해당하는 Cafeteria Like 생성하기")
+    @Operation(summary = "최근 좋아요 누른 Youtube 영상에 해당하는 Cafeteria 조회하기")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", useReturnTypeSchema = true),
         @ApiResponse(responseCode = "400", description = "토큰이 만료/변조/비유효 할 때",
