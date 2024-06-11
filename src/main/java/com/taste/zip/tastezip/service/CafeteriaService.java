@@ -11,8 +11,6 @@ import com.taste.zip.tastezip.auth.TokenDetail;
 import com.taste.zip.tastezip.dto.*;
 import com.taste.zip.tastezip.dto.CafeteriaCommentListResponse.CommentItem;
 import com.taste.zip.tastezip.dto.CafeteriaLikeResponse.CafeteriaLike;
-import com.taste.zip.tastezip.dto.CafeteriaLikeResponse.CafeteriaVideo;
-import com.taste.zip.tastezip.dto.CafeteriaLikeResponse.Statistic;
 import com.taste.zip.tastezip.entity.Account;
 import com.taste.zip.tastezip.entity.AccountCafeteriaMapping;
 import com.taste.zip.tastezip.entity.AccountOAuth;
@@ -21,7 +19,6 @@ import com.taste.zip.tastezip.entity.Cafeteria;
 import com.taste.zip.tastezip.entity.Comment;
 import com.taste.zip.tastezip.entity.Video;
 import com.taste.zip.tastezip.entity.enumeration.AccountCafeteriaMappingType;
-import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType;
 import com.taste.zip.tastezip.entity.enumeration.OAuthType;
 import com.taste.zip.tastezip.entity.enumeration.VideoPlatform;
 import com.taste.zip.tastezip.repository.AccountCafeteriaMappingRepository;
@@ -190,55 +187,10 @@ public class CafeteriaService {
                 AccountCafeteriaMappingType.LIKE, tokenDetail.userId());
         final List<Cafeteria> cafeteriaList = likeMappings.stream().map(AccountCafeteriaMapping::getCafeteria).toList();
 
-        // Youtube Video
-        final Optional<AccountOAuth> accountGoogle = accountOAuthRepository.findByTypeAndAccount_Id(OAuthType.GOOGLE, tokenDetail.userId());
-        YouTube youtubeClient = null;
-        if (accountGoogle.isPresent()) {
-            final AccountOAuth auth = accountGoogle.get();
-            final TokenResponse tokenResponse = new TokenResponse()
-                .setAccessToken(auth.getAccessToken())
-                .setRefreshToken(auth.getRefreshToken())
-                .setExpiresInSeconds(auth.getExpireSeconds())
-                .setTokenType(auth.getTokenType())
-                .setScope(auth.getScope());
-            youtubeClient = googleOAuthProvider.createYoutubeClient(tokenResponse);
-        }
-
         for (Cafeteria cafeteria : cafeteriaList) {
             final List<Video> topVideos = videoRepository.findTopByCafeteriaId(5L, cafeteria.getId());
-            final List<CafeteriaLikeResponse.CafeteriaVideo> videos = new ArrayList<>();
 
-            for (Video video : topVideos) {
-                VideoListResponse videoResponse = null;
-                CafeteriaLikeResponse.CafeteriaVideo cafeteriaVideo;
-
-                if (youtubeClient != null && video.getPlatform() == VideoPlatform.YOUTUBE) {
-                    try {
-                        videoResponse = youtubeClient.videos().list("id, snippet, statistics")
-                            .setId(video.getVideoPk())
-                            .execute();
-                    } catch (IOException e) {
-                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, e.getMessage());
-                    }
-                }
-
-                videos.add(new CafeteriaVideo(
-                    video,
-                    videoResponse != null && !videoResponse.getItems().isEmpty() ?
-                        VideoFeedResponse.YoutubeVideo.of(videoResponse.getItems().get(0).getSnippet(), videoResponse.getItems().get(0).getStatistics())
-                        : null,
-                    new Statistic(
-                        video.getAccountVideoMappings().stream()
-                            .filter(accountVideoMapping -> accountVideoMapping.getType() == AccountVideoMappingType.LIKE)
-                            .count(),
-                        video.getAccountVideoMappings().stream()
-                            .filter(accountVideoMapping -> accountVideoMapping.getType() == AccountVideoMappingType.TROPHY)
-                            .count()
-                    )
-                ));
-            }
-
-            list.add(new CafeteriaLike(cafeteria, (long) cafeteria.getVideoCnt(), (long) cafeteria.getCommentCnt(), videos));
+            list.add(new CafeteriaLike(cafeteria, topVideos));
         }
 
         return new CafeteriaLikeResponse(list);
