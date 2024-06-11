@@ -190,7 +190,48 @@ public class CafeteriaService {
         for (Cafeteria cafeteria : cafeteriaList) {
             final List<Video> topVideos = videoRepository.findTopByCafeteriaId(5L, cafeteria.getId());
 
-            list.add(new CafeteriaLike(cafeteria, topVideos));
+            List<VideoResponse> videoResponses = new ArrayList<>();
+            for (Video video : topVideos) {
+                VideoListResponse videoResponse = null;
+                VideoSnippet snippet = null;
+                VideoStatistics statistics = null;
+
+                if (video.getPlatform() == VideoPlatform.YOUTUBE) {
+                    Optional<AccountOAuth> accountGoogle = accountOAuthRepository.findByTypeAndAccount_Id(OAuthType.GOOGLE, tokenDetail.userId());
+                    if (accountGoogle.isPresent()) {
+                        AccountOAuth auth = accountGoogle.get();
+                        TokenResponse tokenResponse = new TokenResponse()
+                                .setAccessToken(auth.getAccessToken())
+                                .setRefreshToken(auth.getRefreshToken())
+                                .setExpiresInSeconds(auth.getExpireSeconds())
+                                .setTokenType(auth.getTokenType())
+                                .setScope(auth.getScope());
+                        YouTube youtubeClient = googleOAuthProvider.createYoutubeClient(tokenResponse);
+                        try {
+                            videoResponse = youtubeClient.videos().list("id,snippet,statistics")
+                                    .setId(video.getVideoPk())
+                                    .execute();
+                        } catch (IOException e) {
+                            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, e.getMessage());
+                        } catch (Exception e) {
+                            videoResponse = null;
+                        }
+
+                        if (videoResponse != null && !videoResponse.getItems().isEmpty()) {
+                            com.google.api.services.youtube.model.Video youtubeVideo = videoResponse.getItems().get(0);
+                            snippet = youtubeVideo.getSnippet();
+                            statistics = youtubeVideo.getStatistics();
+                        }
+                    }
+                }
+
+                List<AccountVideoMapping> videoMappings = accountVideoMappingRepository.findAllByAccount_IdAndVideoId(
+                        tokenDetail.userId(), video.getId());
+
+                videoResponses.add(VideoResponse.from(video, snippet, statistics, VideoResponse.AccountMapping.of(videoMappings)));
+            }
+
+            list.add(new CafeteriaLike(cafeteria, videoResponses));
         }
 
         return new CafeteriaLikeResponse(list);

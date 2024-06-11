@@ -12,7 +12,7 @@ public record CafeteriaLikeResponse(
         @JsonIgnoreProperties(value = { "videos", "videoCnt", "hibernateLazyInitializer", "handler" })
         Cafeteria cafeteria,
         @JsonIgnoreProperties(value = { "cafeteria", "accountVideoMappings" })
-        List<Video> videoList
+        List<VideoResponse> videoList
     ) {
 
     }

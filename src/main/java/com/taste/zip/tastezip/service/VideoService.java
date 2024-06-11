@@ -286,14 +286,14 @@ public class VideoService {
             .build());
     }
 
-    public List<WorldcupResponseDto> getWorldCupVideos(TokenDetail tokenDetail) {
+    public List<VideoResponse> getWorldCupVideos(TokenDetail tokenDetail) {
         final List<Video> videos = videoRepository.findAll();
 
         if (videos.size() < WORLD_CUP_LIST_SIZE) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Not enough videos available. Required: 16, Available: " + videos.size());
         }
 
-        final List<WorldcupResponseDto> worldcupResponponses = new ArrayList<>();
+        final List<VideoResponse> worldcupResponponses = new ArrayList<>();
 
         // Youtube Video
         final Optional<AccountOAuth> accountGoogle = accountOAuthRepository.findByTypeAndAccount_Id(OAuthType.GOOGLE, tokenDetail.userId());
@@ -328,11 +328,11 @@ public class VideoService {
 
             // AccountMapping 생성 (예제 데이터를 사용)
             List<AccountVideoMapping> mappingList = video.getAccountVideoMappings();
-            WorldcupResponseDto.AccountMapping accountMapping = WorldcupResponseDto.AccountMapping.of(mappingList);
+            VideoResponse.AccountMapping accountMapping = VideoResponse.AccountMapping.of(mappingList);
 
             // VideoResponse 생성
-            WorldcupResponseDto worldcupResponseDto = WorldcupResponseDto.from(video, snippet, statistics, accountMapping);
-            worldcupResponponses.add(worldcupResponseDto);
+            VideoResponse response = VideoResponse.from(video, snippet, statistics, accountMapping);
+            worldcupResponponses.add(response);
         }
         return worldcupResponponses;
     }
