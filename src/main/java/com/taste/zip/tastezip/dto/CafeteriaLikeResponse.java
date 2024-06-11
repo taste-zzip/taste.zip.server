@@ -11,8 +11,24 @@ public record CafeteriaLikeResponse(
     public record CafeteriaLike(
         @JsonIgnoreProperties(value = { "videos", "videoCnt", "comments", "commentCnt", "hibernateLazyInitializer", "handler" })
         Cafeteria cafeteria,
+        Long videoCnt,
+        Long commentCnt,
+        List<CafeteriaVideo> videoList
+    ) {
+    }
+
+    public record CafeteriaVideo(
         @JsonIgnoreProperties(value = { "cafeteria", "accountVideoMappings" })
-        List<Video> videoList
+        Video video,
+        VideoFeedResponse.YoutubeVideo youtubeVideo,
+        Statistic statistic
+    ) {
+
+    }
+
+    public record Statistic(
+        Long videoLikeCount,
+        Long videoTrophyCount
     ) {
 
     }
