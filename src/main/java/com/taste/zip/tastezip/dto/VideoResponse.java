@@ -2,6 +2,7 @@ package com.taste.zip.tastezip.dto;
 
 import com.taste.zip.tastezip.dto.VideoFeedResponse.AccountMapping;
 import com.taste.zip.tastezip.entity.AccountVideoMapping;
+import com.taste.zip.tastezip.entity.Cafeteria;
 import com.taste.zip.tastezip.entity.Video;
 import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType;
 import com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType.Like;
@@ -23,7 +24,8 @@ public record VideoResponse(
         String thumbnailUrl,
         String title,
         int viewCount,
-        AccountMapping accountVideoMapping
+        AccountMapping accountVideoMapping,
+        CafeteriaResponse cafeteriaResponse
 ) {
     /**
      * @see com.taste.zip.tastezip.entity.enumeration.AccountVideoMappingType
@@ -74,6 +76,9 @@ public record VideoResponse(
                     .filter(accountVideoMapping -> accountVideoMapping.getType() == AccountVideoMappingType.TROPHY)
                     .count();
 
+            Cafeteria cafeteria = video.getCafeteria();
+            CafeteriaResponse cafeteriaResponse = CafeteriaResponse.from(cafeteria);
+
             return new VideoResponse(
                 video.getId(),
                 video.getPlatform(),
@@ -85,7 +90,8 @@ public record VideoResponse(
                 snippet == null || snippet.getThumbnails() == null || snippet.getThumbnails().getStandard() == null ? null : snippet.getThumbnails().getStandard().getUrl(),
                 snippet == null ? null : snippet.getTitle(),
                 statistics == null || statistics.getViewCount() == null ? 0 : statistics.getViewCount().intValue(),
-                mapping
+                mapping,
+                cafeteriaResponse
             );
         }
 

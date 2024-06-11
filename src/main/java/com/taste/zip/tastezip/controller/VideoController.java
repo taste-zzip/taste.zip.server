@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.swing.text.View;
 import java.util.List;
 
 @RestController
@@ -128,11 +129,12 @@ public class VideoController {
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ProblemDetail.class)) })
     })
     @GetMapping("/video/worldcup")
-    public ResponseEntity<List<WorldcupResponseDto>> getWorldCupVideos(
+    public ResponseEntity<List<VideoResponse
+            >> getWorldCupVideos(
             @Parameter(hidden = true) @AccessToken TokenDetail tokenDetail
     ) {
         // 16개의 비디오 객체를 반환한다.
-        final List<WorldcupResponseDto> responses = videoService.getWorldCupVideos(tokenDetail);
+        final List<VideoResponse> responses = videoService.getWorldCupVideos(tokenDetail);
         return ResponseEntity.ok(responses);
     }
 
