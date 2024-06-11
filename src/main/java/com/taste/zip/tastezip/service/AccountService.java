@@ -43,6 +43,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 @Service
@@ -153,13 +154,6 @@ public class AccountService {
             throw new HttpClientErrorException(HttpStatus.CONFLICT, messageSource.getMessage("admin.config.no-token-duration", null, null));
         }
 
-        final Account newAccount = Account.builder(request.nickname(), request.type())
-            .bio(request.bio())
-            .profileImage(request.profileImage())
-            .build();
-
-        final Account savedAccount = accountRepository.save(newAccount);
-
         final OAuthProvider provider = findProvider(request.oauth().type());
         if (provider == null) {
             final String message = messageSource.getMessage("account.oauth.provider.not-found",
@@ -171,6 +165,13 @@ public class AccountService {
         if (accountOAuthRepository.existsByTypeAndOauthPk(request.oauth().type(), credential.user().oauthPk())) {
             throw new HttpClientErrorException(HttpStatus.CONFLICT, messageSource.getMessage("account.register.duplicated-oauth-pk", null, null));
         }
+
+        final Account newAccount = Account.builder(request.nickname(), request.type())
+            .bio(request.bio())
+            .profileImage(StringUtils.hasText(request.profileImage()) ? request.profileImage() : credential.user().profileImage())
+            .build();
+
+        final Account savedAccount = accountRepository.save(newAccount);
 
         accountOAuthRepository.save(AccountOAuth.builder(savedAccount, request.oauth().type(), credential.user().oauthPk())
             .accessToken(credential.token().accessToken())
