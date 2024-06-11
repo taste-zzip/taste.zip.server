@@ -6,7 +6,7 @@ import com.taste.zip.tastezip.entity.Video;
 import java.util.List;
 
 public record YoutubeLikeCafeteriaUpdateResponse(
-    @JsonIgnoreProperties(value = { "videos", "videoCnt", "hibernateLazyInitializer", "handler" })
+    @JsonIgnoreProperties(value = { "videos", "videoCnt", "comments", "commentCnt", "hibernateLazyInitializer", "handler" })
     List<Cafeteria> likedCafeteria,
 
     @JsonIgnoreProperties(value = { "cafeteria", "accountVideoMappings" })
