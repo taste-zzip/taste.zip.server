@@ -98,6 +98,9 @@ public class YoutubeService {
                 }
             }
         }
+        // @see distinct() with consideration
+        likedCafeteria = likedCafeteria.stream().distinct().toList();
+        likedVideo = likedVideo.stream().distinct().toList();
 
         return new YoutubeLikeCafeteriaUpdateResponse(likedCafeteria, likedVideo);
     }

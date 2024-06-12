@@ -6,6 +6,7 @@ import com.taste.zip.tastezip.entity.enumeration.VideoStatus;
 import com.taste.zip.tastezip.entity.enumeration.converter.VideoPlatformConverter;
 import com.taste.zip.tastezip.entity.enumeration.converter.VideoStatusConverter;
 import jakarta.persistence.*;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -52,4 +53,20 @@ public class Video extends AuditingEntity {
     @OneToMany(mappedBy = "video", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<AccountVideoMapping> accountVideoMappings;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Video video = (Video) o;
+        return Objects.equals(id, video.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
