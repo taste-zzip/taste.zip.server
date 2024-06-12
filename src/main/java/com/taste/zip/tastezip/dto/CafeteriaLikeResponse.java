@@ -9,8 +9,9 @@ public record CafeteriaLikeResponse(
     List<CafeteriaLike> cafeteriaList
 ) {
     public record CafeteriaLike(
-        @JsonIgnoreProperties(value = { "videos", "videoCnt", "comments", "commentCnt", "hibernateLazyInitializer", "handler" })
-        Cafeteria cafeteria,
+        @JsonIgnoreProperties(value = { "videos", "hibernateLazyInitializer", "handler" })
+        CafeteriaResponse cafeteria,
+
         @JsonIgnoreProperties(value = { "cafeteria", "accountVideoMappings" })
         List<VideoResponse> videoList
     ) {
