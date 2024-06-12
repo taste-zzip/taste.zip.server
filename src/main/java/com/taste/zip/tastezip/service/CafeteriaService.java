@@ -230,8 +230,9 @@ public class CafeteriaService {
 
                 videoResponses.add(VideoResponse.from(video, snippet, statistics, VideoResponse.AccountMapping.of(videoMappings)));
             }
+            CafeteriaResponse cafeteriaResponse = CafeteriaResponse.from(cafeteria);
 
-            list.add(new CafeteriaLike(cafeteria, videoResponses));
+            list.add(new CafeteriaLike(cafeteriaResponse, videoResponses));
         }
 
         return new CafeteriaLikeResponse(list);
