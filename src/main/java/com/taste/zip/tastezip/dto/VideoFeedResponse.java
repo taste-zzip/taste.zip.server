@@ -20,7 +20,7 @@ public record VideoFeedResponse(
     public record Feed(
         @JsonIgnoreProperties(value = { "cafeteria", "accountVideoMappings" })
         Video video,
-        @JsonIgnoreProperties(value = { "videos", "videoCnt", "hibernateLazyInitializer", "handler" })
+        @JsonIgnoreProperties(value = { "videos", "videoCnt", "comments", "commentCnt", "hibernateLazyInitializer", "handler" })
         Cafeteria cafeteria,
         YoutubeVideo youtubeVideo,
         YoutubeChannel youtubeChannel,
