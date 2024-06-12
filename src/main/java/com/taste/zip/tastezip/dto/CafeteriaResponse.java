@@ -13,7 +13,8 @@ public record CafeteriaResponse(
     String neighborhood,
     String latitude,
     String longitude,
-    int videoCnt // 식당에 등록된 영상 개수
+    int videoCnt, // 식당에 등록된 영상 개수
+    int commentCnt
     ) {
     public static CafeteriaResponse from(Cafeteria cafeteria) {
         return new CafeteriaResponse(
@@ -27,7 +28,8 @@ public record CafeteriaResponse(
             cafeteria.getNeighborhood(),
             cafeteria.getLatitude(),
             cafeteria.getLongitude(),
-            cafeteria.getVideoCnt()
+            cafeteria.getVideoCnt(),
+            cafeteria.getCommentCnt()
         );
     }
 }
