@@ -310,10 +310,10 @@ public class CafeteriaService {
             String secondMostCommonType = sortedTypes.get(1).getKey();
 
             // 가장 많이 등장한 type에서 3개의 Cafeteria를 검색
-            List<Cafeteria> top3Cafeterias = cafeteriaRepository.findTop3ByType(mostCommonType);
+            List<Cafeteria> top3Cafeterias = cafeteriaRepository.findTopByTypeAndVideoCntAfter(3L, mostCommonType, 1L);
 
             // 두 번째로 많이 등장한 type에서 2개의 Cafeteria를 검색
-            List<Cafeteria> top2Cafeterias = cafeteriaRepository.findTop2ByType(secondMostCommonType);
+            List<Cafeteria> top2Cafeterias = cafeteriaRepository.findTopByTypeAndVideoCntAfter(2L, secondMostCommonType, 1L);
 
             // 합치기
             recommendedCafeterias = Stream.concat(top3Cafeterias.stream(), top2Cafeterias.stream())
@@ -322,7 +322,10 @@ public class CafeteriaService {
             // 좋아요 누른 type의 개수가 부족할 경우 무작위로 Cafeteria를 추출 (초기 사용자의 경우)
             recommendedCafeterias = cafeteriaRepository.findAll();
             Collections.shuffle(recommendedCafeterias);
-            recommendedCafeterias = recommendedCafeterias.stream().limit(5).collect(Collectors.toList());
+            recommendedCafeterias = recommendedCafeterias.stream()
+                .filter(cafeteria -> cafeteria.getVideoCnt() > 0)
+                .limit(5)
+                .collect(Collectors.toList());
         }
 
         return recommendedCafeterias.stream()
