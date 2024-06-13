@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 public class StoreNameExtractor {
 
-    private CafeteriaRepository cafeteriaRepository;
+    private final CafeteriaRepository cafeteriaRepository;
 
     private final String apiKey;
 
@@ -35,12 +35,11 @@ public class StoreNameExtractor {
 
         try (Stream<String> lines = Files.lines(Paths.get(filePath))) {
             titles = lines.skip(1) // Skip header row
-                    .limit(20) // 타이틀 20개만 가져오기
+                    .limit(10) // 타이틀 20개만 가져오기
                     .collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(titles.toArray().length);
         return titles;
     }
 
@@ -53,7 +52,6 @@ public class StoreNameExtractor {
             String storeName = extractStoreNameFromTitle(title);
             storeName = storeName.replace("\n\n", ""); // \n\n 제거
             guessedNames.add(storeName);
-            System.out.println(storeName);
         }
 
         return guessedNames;
