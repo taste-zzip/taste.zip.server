@@ -14,14 +14,15 @@
 
 
 ## ⭐ Stack
+
 <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white"/>
 <img src="https://img.shields.io/badge/SpringBoot-6DB33F?style=flat-square&logo=Spring Boot&logoColor=white"/>
 <img src="https://img.shields.io/badge/Java-137CBD?style=flat-square&logo=Java&logoColor=white"/>
 <img src="https://img.shields.io/badge/PostgreSQL-4479A1?style=flat-square&logo=PostgreSQL&logoColor=white"/>
 
 ## 📌 Server architecture
-<img width="630" alt="image" src="https://github.com/taste-zzip/taste.zip.server/assets/12531340/ccdfb05e-8fca-4c84-94ed-82d530f0796e">
 
+<img width="630" alt="image" src="https://github.com/PiLab-CAU/OpenSourceProject-2401/assets/12531340/394a559f-dac7-4492-acea-fb21e33aaf70">
 
 ## ☘️Project Foldering
 
